@@ -435,12 +435,7 @@ function fetchTikTokLiveData($username) {
         logMessage("✓ Cookies mis à jour (" . count($matches[1]) . " nouveaux)");
     }
 
-    $html = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $error = curl_error($ch);
-    curl_close($ch);
-
-    if ($html === false) {
+    if ($html === false || empty($html)) {
         throw new Exception("Erreur de requête: $error");
     }
     if ($httpCode !== 200) {

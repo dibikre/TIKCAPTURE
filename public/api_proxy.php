@@ -1,11 +1,11 @@
 <?php
 /**
- * Proxy API avec auto-renouvellement de clé
+ * Proxy API avec auto-renouvellement de clé et auto-résolution de cible
  */
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Headers: Content-Type, X-API-Key');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
@@ -16,17 +16,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // CONFIGURATION
 // ============================================================
 $MASTER_SECRET = 'MonSecret2026Ultra$ecuris#789XYZ';
-$isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
-$scheme = $isHttps ? 'https://' : 'http://';
-$httpHost = $_SERVER['HTTP_HOST'] ?? '127.0.0.1:8000';
-$API_URL = $scheme . $httpHost . '/tiktok_live.php';
 $KEY_FILE = __DIR__ . '/donnees/api_key.json';
+
+// Déterminer l'adresse de destination pour le script tiktok_live.php
+function getTargetApiUrl() {
+    // Si on est en environnement de développement PHP CLI (port 8000)
+    $serverPort = $_SERVER['SERVER_PORT'] ?? 8000;
+    $serverAddr = $_SERVER['SERVER_ADDR'] ?? '127.0.0.1';
+    
+    // Si l'hôte contient un port explicite
+    if (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], ':') !== false) {
+        $host = $_SERVER['HTTP_HOST'];
+    } else {
+        $host = "127.0.0.1:{$serverPort}";
+    }
+    
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($serverPort == 443);
+    $scheme = $isHttps ? 'https://' : 'http://';
+    
+    return $scheme . $host . '/tiktok_live.php';
+}
+
+$API_URL = getTargetApiUrl();
 
 // ============================================================
 // FONCTION: Générer une nouvelle clé API
 // ============================================================
 function generateNewKey($masterSecret, $apiUrl, $keyFile) {
-    error_log("[API-PROXY] Début génération nouvelle clé...");
+    error_log("[API-PROXY] Début génération nouvelle clé via {$apiUrl}...");
     
     $data = [
         'action' => 'generate_key',
@@ -36,20 +53,25 @@ function generateNewKey($masterSecret, $apiUrl, $keyFile) {
     ];
     
     $ch = curl_init($apiUrl);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 180);
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 15);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($data),
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+        CURLOPT_TIMEOUT => 15,
+        CURLOPT_CONNECTTIMEOUT => 5,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_SSL_VERIFYHOST => false
+    ]);
     
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlErr = curl_error($ch);
     curl_close($ch);
     
-    error_log("[API-PROXY] HTTP Code: $httpCode");
+    error_log("[API-PROXY] generate_key Code HTTP: {$httpCode}, Erreur cURL: {$curlErr}");
     
-    if ($httpCode === 200) {
+    if ($httpCode === 200 && !empty($response)) {
         $result = json_decode($response, true);
         if (isset($result['key'])) {
             $keyData = [
@@ -58,22 +80,49 @@ function generateNewKey($masterSecret, $apiUrl, $keyFile) {
                 'expires_at' => time() + (365 * 24 * 60 * 60),
             ];
             
-            // Créer le dossier si nécessaire
             $dir = dirname($keyFile);
             if (!is_dir($dir)) {
                 mkdir($dir, 0755, true);
             }
             
             file_put_contents($keyFile, json_encode($keyData, JSON_PRETTY_PRINT));
-            error_log("[API-PROXY] ✓ Clé sauvegardée dans: $keyFile");
-            
-            sleep(1);
+            error_log("[API-PROXY] ✓ Clé sauvegardée dans: {$keyFile}");
             return $result['key'];
         }
     }
     
-    error_log("[API-PROXY] ✗ Échec génération");
-    return null;
+    // Fallback: si l'appel cURL local a échoué (ex: deadlock PHP built-in single thread), générer directement
+    $keysFile = __DIR__ . '/donnees/.api_keys.json';
+    $dir = dirname($keysFile);
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+    
+    $directKey = 'tk_' . bin2hex(random_bytes(31));
+    $directKeyData = [
+        'key' => $directKey,
+        'name' => 'Clé générée directement par proxy le ' . date('Y-m-d H:i:s'),
+        'created_at' => time(),
+        'expires_at' => time() + (365 * 86400),
+        'requests_count' => 0,
+        'last_used' => null,
+        'active' => true
+    ];
+    
+    $existing = file_exists($keysFile) ? json_decode(file_get_contents($keysFile), true) : [];
+    if (!is_array($existing)) $existing = [];
+    $existing[$directKey] = $directKeyData;
+    file_put_contents($keysFile, json_encode($existing, JSON_PRETTY_PRINT));
+    
+    $proxyKeyData = [
+        'key' => $directKey,
+        'created_at' => time(),
+        'expires_at' => time() + (365 * 24 * 60 * 60),
+    ];
+    file_put_contents($keyFile, json_encode($proxyKeyData, JSON_PRETTY_PRINT));
+    
+    error_log("[API-PROXY] ✓ Clé générée en fallback direct");
+    return $directKey;
 }
 
 // ============================================================
@@ -85,16 +134,11 @@ function getValidApiKey($masterSecret, $apiUrl, $keyFile) {
         
         if ($keyData && isset($keyData['key'])) {
             $expiresIn = $keyData['expires_at'] - time();
-            $daysLeft = round($expiresIn / 86400);
             
             if ($expiresIn > (7 * 24 * 60 * 60)) {
                 return $keyData['key'];
             }
-            
-            error_log("[API-PROXY] ⚠ Clé expire bientôt, régénération...");
         }
-    } else {
-        error_log("[API-PROXY] ⚠ Pas de fichier de clé, génération...");
     }
     
     return generateNewKey($masterSecret, $apiUrl, $keyFile);
@@ -105,7 +149,7 @@ function getValidApiKey($masterSecret, $apiUrl, $keyFile) {
 // ============================================================
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Méthode non autorisée']);
+    echo json_encode(['error' => 'Méthode non autorisée. Utilisez POST uniquement.']);
     exit;
 }
 
@@ -118,7 +162,6 @@ if (json_last_error() !== JSON_ERROR_NONE) {
     exit;
 }
 
-// Obtenir clé valide
 $API_KEY = getValidApiKey($MASTER_SECRET, $API_URL, $KEY_FILE);
 
 if (!$API_KEY) {
@@ -129,27 +172,29 @@ if (!$API_KEY) {
 
 $input['api_key'] = $API_KEY;
 
-// Requête vers API
+// Exécution de la requête vers tiktok_live.php
 $ch = curl_init($API_URL);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($input));
-curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    'Content-Type: application/json',
-    'X-API-Key: ' . $API_KEY
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => json_encode($input),
+    CURLOPT_HTTPHEADER => [
+        'Content-Type: application/json',
+        'X-API-Key: ' . $API_KEY
+    ],
+    CURLOPT_TIMEOUT => 60,
+    CURLOPT_CONNECTTIMEOUT => 10,
+    CURLOPT_SSL_VERIFYPEER => false,
+    CURLOPT_SSL_VERIFYHOST => false
 ]);
-curl_setopt($ch, CURLOPT_TIMEOUT, 90);
-curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 15);
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
 $response = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$curlError = curl_error($ch);
 curl_close($ch);
 
-// Retry si erreur auth
+// Retry automatique si clé rejetée
 if ($httpCode === 401 || $httpCode === 403) {
-    error_log("[API-PROXY] Clé rejetée, régénération...");
-    
     if (file_exists($KEY_FILE)) {
         unlink($KEY_FILE);
     }
@@ -158,18 +203,20 @@ if ($httpCode === 401 || $httpCode === 403) {
     
     if ($API_KEY) {
         $input['api_key'] = $API_KEY;
-        
         $ch = curl_init($API_URL);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($input));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/json',
-            'X-API-Key: ' . $API_KEY
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($input),
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'X-API-Key: ' . $API_KEY
+            ],
+            CURLOPT_TIMEOUT => 60,
+            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false
         ]);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 90);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 15);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -177,6 +224,14 @@ if ($httpCode === 401 || $httpCode === 403) {
     }
 }
 
+if ($httpCode === 0 || empty($response)) {
+    http_response_code(502);
+    echo json_encode([
+        'error' => 'Le backend local de scraping n\'a pas répondu.',
+        'details' => $curlError ?: 'Timeout ou serveur PHP injoignable sur ' . $API_URL
+    ]);
+    exit;
+}
+
 http_response_code($httpCode);
 echo $response;
-?>
