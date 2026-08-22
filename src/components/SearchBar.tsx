@@ -94,14 +94,9 @@ export function SearchBar({ onSearch, isLoading = false, className, initialValue
         </div>
       </div>
 
-      {/* Search Form */}
-      <form
-        action="javascript:void(0);"
-        onSubmit={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          handleSubmit(e)
-        }}
+      {/* Search Container */}
+      <div
+        role="search"
         className={cn(
           'relative group transition-all duration-500',
           isFocused && 'scale-[1.01]'
@@ -131,7 +126,7 @@ export function SearchBar({ onSearch, isLoading = false, className, initialValue
               if (e.key === 'Enter') {
                 e.preventDefault()
                 e.stopPropagation()
-                handleSubmit(e)
+                handleSubmit()
               }
             }}
             placeholder={platformInfo.placeholder}
@@ -148,7 +143,7 @@ export function SearchBar({ onSearch, isLoading = false, className, initialValue
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                handleSubmit(e)
+                handleSubmit()
               }}
               disabled={isLoading || !input.trim()}
               className={cn(
@@ -178,7 +173,7 @@ export function SearchBar({ onSearch, isLoading = false, className, initialValue
           )}
           style={{ background: `linear-gradient(to right, ${accentColor}, #00F2EA)` }}
         />
-      </form>
+      </div>
     </div>
   )
 }
