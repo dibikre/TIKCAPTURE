@@ -3,10 +3,14 @@
  * TikTok Live Recorder - API Backend SÉCURISÉE
  */
 
+// Désactiver l'affichage direct des erreurs PHP pour ne pas corrompre le flux JSON
+error_reporting(E_ALL & ~E_NOTICE);
+ini_set('display_errors', '0');
+
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, X-API-Key');
+header('Access-Control-Allow-Methods: POST, OPTIONS, GET');
+header('Access-Control-Allow-Headers: Content-Type, X-API-Key, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
@@ -14,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // ============================================================
-// CONFIGURATION SÉCURITÉ
+// CONFIGURATION SÉCURITÉ & PRINCIPALE
 // ============================================================
 $SECURITY_CONFIG = [
     'apiKeysFile' => __DIR__ . '/donnees/.api_keys.json',
@@ -25,30 +29,25 @@ $SECURITY_CONFIG = [
     'enableRateLimit' => true
 ];
 
-// ============================================================
-// CONFIGURATION PRINCIPALE
-// ============================================================
 $CONFIG = [
     'recordingMode' => 'client',
-    'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'timeout' => 30,
     'outputDir' => __DIR__ . '/donnees',
     'logFile' => __DIR__ . '/donnees/api.log',
     'debug' => true,
 ];
 
-// Créer les dossiers nécessaires
-if (!file_exists($CONFIG['outputDir'])) {
-    mkdir($CONFIG['outputDir'], 0777, true);
-}
-
-if (!file_exists($SECURITY_CONFIG['apiKeysFile'])) {
-    logMessage("Création du fichier de clés: " . $SECURITY_CONFIG['apiKeysFile'], 'INFO');
-    file_put_contents($SECURITY_CONFIG['apiKeysFile'], json_encode([], JSON_PRETTY_PRINT));
-    chmod($SECURITY_CONFIG['apiKeysFile'], 0600);
-    logMessage("✓ Fichier de clés créé avec succès", 'INFO');
-} else {
-    logMessage("✓ Fichier de clés existant trouvé", 'DEBUG');
+/**
+ * Logger les événements normaux
+ */
+function logMessage($message, $level = 'INFO') {
+    global $CONFIG;
+    if (!$CONFIG['debug']) return;
+    
+    $timestamp = date('Y-m-d H:i:s');
+    $logEntry = "[{$timestamp}] [{$level}] {$message}\n";
+    @file_put_contents($CONFIG['logFile'], $logEntry, FILE_APPEND);
 }
 
 /**
@@ -71,26 +70,20 @@ function securityLog($message, $level = 'INFO', $data = []) {
     ];
     
     $logLine = json_encode($logEntry, JSON_UNESCAPED_UNICODE) . "\n";
-    file_put_contents($SECURITY_CONFIG['securityLogFile'], $logLine, FILE_APPEND);
-}
-
-/**
- * Logger les événements normaux
- */
-function logMessage($message, $level = 'INFO') {
-    global $CONFIG;
-    if (!$CONFIG['debug']) return;
-    
-    $timestamp = date('Y-m-d H:i:s');
-    $logEntry = "[{$timestamp}] [{$level}] {$message}\n";
-    file_put_contents($CONFIG['logFile'], $logEntry, FILE_APPEND);
+    @file_put_contents($SECURITY_CONFIG['securityLogFile'], $logLine, FILE_APPEND);
 }
 
 /**
  * Réponse JSON standardisée
  */
 function jsonResponse($data, $success = true, $statusCode = 200) {
-    http_response_code($statusCode);
+    if (!headers_sent()) {
+        header('Content-Type: application/json; charset=utf-8');
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: POST, OPTIONS, GET');
+        header('Access-Control-Allow-Headers: Content-Type, X-API-Key, Authorization');
+        http_response_code($statusCode);
+    }
     echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
@@ -114,6 +107,15 @@ function jsonError($message, $statusCode = 400, $details = null) {
     securityLog($message, 'ERROR', $details ?? []);
     
     jsonResponse($response, false, $statusCode);
+}
+
+// Initialisation des dossiers et fichiers
+if (!file_exists($CONFIG['outputDir'])) {
+    @mkdir($CONFIG['outputDir'], 0777, true);
+}
+
+if (!file_exists($SECURITY_CONFIG['apiKeysFile'])) {
+    @file_put_contents($SECURITY_CONFIG['apiKeysFile'], json_encode([], JSON_PRETTY_PRINT));
 }
 
 /**
@@ -792,7 +794,7 @@ try {
             ]);
     }
 
-} catch (Exception $e) {
+} catch (Throwable $e) {
     jsonError($e->getMessage(), 500, [
         'trace' => $CONFIG['debug'] ? $e->getTraceAsString() : null
     ]);

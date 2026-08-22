@@ -17,37 +17,44 @@ interface SearchParams {
 }
 
 async function searchTikTokUser({ username, originalInput }: SearchParams): Promise<SearchResponse> {
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
-      action: 'search', 
-      username,
-      original_input: originalInput // Pour debug/logging côté serveur
-    }),
-  })
-  
-  if (!response.ok) {
-    throw new Error(`Erreur serveur: ${response.status}`)
+  let response: Response
+  try {
+    response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        action: 'search', 
+        username,
+        original_input: originalInput
+      }),
+    })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Erreur de connexion réseau'
+    throw new Error(`Impossible de contacter le serveur API (${API_URL}): ${message}`)
   }
   
-  const data = await response.json()
+  let data: any
+  try {
+    data = await response.json()
+  } catch (jsonErr) {
+    throw new Error(`Réponse non-JSON du serveur (HTTP ${response.status})`)
+  }
   
-  // Gestion des erreurs spécifiques
-  if (data.error) {
-    // Utilisateur non trouvé
-    if (data.error.includes('non trouvé') || data.error.includes('not found')) {
+  // Gestion des erreurs spécifiques renvoyées par le backend PHP
+  if (!response.ok || data.error) {
+    const errorMsg = data.error || `Erreur serveur: ${response.status}`
+    if (typeof errorMsg === 'string' && (errorMsg.includes('non trouvé') || errorMsg.includes('not found') || errorMsg.includes('introuvable'))) {
       return {
         ...data,
         notFound: true,
         suggestions: data.suggestions || [],
       }
     }
-    throw new Error(data.error)
+    throw new Error(errorMsg)
   }
   
   if (!data.success) {
-    throw new Error('Réponse invalide du serveur')
+    throw new Error(data.error || 'Réponse invalide du serveur')
   }
 
   // Utilisateur introuvable : TikTok retourne CurrentRoom vide (roomInfo: null)
