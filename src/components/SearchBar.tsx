@@ -71,10 +71,13 @@ export function SearchBar({ onSearch, isLoading = false, className, initialValue
     return trimmed
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleSubmit = (e?: React.SyntheticEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
     const trimmed = input.trim()
-    if (!trimmed) return
+    if (!trimmed || isLoading) return
     onSearch(extractUsername(trimmed))
   }
 
@@ -93,7 +96,12 @@ export function SearchBar({ onSearch, isLoading = false, className, initialValue
 
       {/* Search Form */}
       <form
-        onSubmit={handleSubmit}
+        action="javascript:void(0);"
+        onSubmit={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          handleSubmit(e)
+        }}
         className={cn(
           'relative group transition-all duration-500',
           isFocused && 'scale-[1.01]'
@@ -119,6 +127,13 @@ export function SearchBar({ onSearch, isLoading = false, className, initialValue
             onChange={(e) => setInput(e.target.value)}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                e.stopPropagation()
+                handleSubmit(e)
+              }
+            }}
             placeholder={platformInfo.placeholder}
             className={cn(
               'flex-1 min-w-0 bg-transparent border-none outline-none',
@@ -129,7 +144,12 @@ export function SearchBar({ onSearch, isLoading = false, className, initialValue
           />
 
           <button
-              type="submit"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleSubmit(e)
+              }}
               disabled={isLoading || !input.trim()}
               className={cn(
                 'flex items-center justify-center gap-1.5 shrink-0',

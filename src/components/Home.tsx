@@ -16,7 +16,7 @@ import { BASE_URL } from '../lib/constants'
 
 export function Home() {
   const navigate = useNavigate()
-  const { searchQuery, searchResult, setSearchResult } = useLiveStore()
+  const { searchQuery, setSearchQuery, searchResult, setSearchResult } = useLiveStore()
   const [notFoundUsername, setNotFoundUsername] = useState<string | null>(null)
   const [initialSearchValue, setInitialSearchValue] = useState('')
   const searchMutation = useUniversalSearch()
@@ -24,7 +24,10 @@ export function Home() {
   const [refreshRecordings] = useState(0)
 
   const handleSearch = useCallback(async (input: string) => {
-    navigate('/')
+    if (window.location.pathname !== '/') {
+      navigate('/')
+    }
+    setSearchQuery(input)
     setSearchResult(null)
     setNotFoundUsername(null)
     const platform = detectPlatform(input)
@@ -49,7 +52,7 @@ export function Home() {
       console.error('Search failed:', error)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchMutation])
+  }, [searchMutation, navigate, setSearchQuery, setSearchResult])
 
   const autoSearchDone = useRef(false)
   const [shouldAutoSearch, setShouldAutoSearch] = useState(false)

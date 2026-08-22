@@ -354,7 +354,6 @@ function fetchTikTokLiveData($username) {
     logMessage("Fetching data via page source for username: {$username}");
     $url = buildLivePageUrl($username);
     logMessage("URL page live: {$url}");
-    sleep(2);
     
     // Nettoyer les préfixes #HttpOnly_ incompatibles avec cURL
     $cookiePath = __DIR__ . '/donnees/tiktok_cookies.txt';
