@@ -1,8 +1,9 @@
 import { useMutation } from '@tanstack/react-query'
 import type { SearchResult } from '../types'
 import { extractUsername, isValidUsernameFormat} from '../lib/utils'
+import { BASE_URL } from '../lib/constants'
 
-const API_URL = 'https://tikcapture.live/api_proxy.php'
+const API_URL = `${BASE_URL}/api_proxy.php`
 
 interface SearchResponse extends SearchResult {
   error?: string

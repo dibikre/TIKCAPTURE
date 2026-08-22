@@ -16,7 +16,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // CONFIGURATION
 // ============================================================
 $MASTER_SECRET = 'MonSecret2026Ultra$ecuris#789XYZ';
-$API_URL = 'https://tikcapture.live/tiktok_live.php';
+$isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+$scheme = $isHttps ? 'https://' : 'http://';
+$httpHost = $_SERVER['HTTP_HOST'] ?? '127.0.0.1:8000';
+$API_URL = $scheme . $httpHost . '/tiktok_live.php';
 $KEY_FILE = __DIR__ . '/donnees/api_key.json';
 
 // ============================================================

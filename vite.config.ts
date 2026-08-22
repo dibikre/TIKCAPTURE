@@ -20,7 +20,7 @@ export default defineConfig(({mode}) => {
     },
     build: {
       target: 'esnext',
-      minify: 'esbuild', // esbuild is very fast. Use 'terser' if extreme minification is needed
+      minify: 'esbuild',
       cssMinify: true,
       cssCodeSplit: true,
       sourcemap: false,
@@ -37,9 +37,22 @@ export default defineConfig(({mode}) => {
       },
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
+      proxy: {
+        '/api_proxy.php': 'http://127.0.0.1:8000',
+        '/generate_key.php': 'http://127.0.0.1:8000',
+        '/tiktok_live.php': 'http://127.0.0.1:8000',
+        '/tiktok_live_mobile.php': 'http://127.0.0.1:8000',
+        '/suggestion_search.php': 'http://127.0.0.1:8000',
+        '/suggestion.php': 'http://127.0.0.1:8000',
+        '/video-meta.php': 'http://127.0.0.1:8000',
+        '/seo-video.php': 'http://127.0.0.1:8000',
+        '/seo-creator.php': 'http://127.0.0.1:8000',
+        '/api': 'http://127.0.0.1:8000',
+        '/segment_page': 'http://127.0.0.1:8000',
+        '/uploads': 'http://127.0.0.1:8000',
+        '/donnees': 'http://127.0.0.1:8000',
+      },
     },
   };
 });

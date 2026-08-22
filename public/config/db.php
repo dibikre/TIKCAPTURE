@@ -1,9 +1,9 @@
 <?php
 // Configuration de la base de données
 $host = 'localhost';
-$dbname = 'rmwylxiw_cl';
-$username = 'rmwylxiw_cl';
-$password = '46966222Aa@';
+$dbname = 'tikcapture';
+$username = 'root';
+$password = '';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
