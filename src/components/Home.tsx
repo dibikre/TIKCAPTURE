@@ -55,8 +55,6 @@ export function Home() {
   }, [searchMutation, navigate, setSearchQuery, setSearchResult])
 
   const autoSearchDone = useRef(false)
-  const [shouldAutoSearch, setShouldAutoSearch] = useState(false)
-  const [autoSearchUsername, setAutoSearchUsername] = useState('')
   
   useEffect(() => {
     if (autoSearchDone.current) return
@@ -72,24 +70,11 @@ export function Home() {
       ? trimmed.slice(1)
       : trimmed
     setInitialSearchValue(username)
-    navigate('/', { replace: true })
-    // ← MODIFICATION ICI : on stocke pour plus tard au lieu de lancer tout de suite
-    setAutoSearchUsername(username)
-    setShouldAutoSearch(true)
-  }, [navigate])
-
-  // ← NOUVEAU useEffect : lance la recherche APRÈS que SearchBar ait reçu initialValue
-  useEffect(() => {
-    if (!shouldAutoSearch || !autoSearchUsername) return
-    if (initialSearchValue !== autoSearchUsername) return // Attendre que SearchBar ait reçu la valeur
-    
-    const timer = setTimeout(() => {
-      handleSearch(autoSearchUsername)
-      setShouldAutoSearch(false)
-    }, 100)
-    
-    return () => clearTimeout(timer)
-  }, [shouldAutoSearch, autoSearchUsername, initialSearchValue, handleSearch])
+    // Ne pas appeler navigate('/') car cela recharge l'arbre de routage
+    const newUrl = window.location.pathname
+    window.history.replaceState({}, '', newUrl)
+    handleSearch(username)
+  }, [handleSearch])
 
   const handleRetry = () => {
     if (searchQuery) handleSearch(searchQuery)

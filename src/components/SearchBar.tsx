@@ -78,7 +78,7 @@ export function SearchBar({ onSearch, isLoading = false, className, initialValue
     }
     const trimmed = input.trim()
     if (!trimmed || isLoading) return
-    onSearch(extractUsername(trimmed))
+    onSearch(trimmed)
   }
 
   const accentColor = detectedPlatform ? platformInfo.color : '#FF0050'
