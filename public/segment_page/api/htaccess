@@ -1,0 +1,29 @@
+# API - Accessible publiquement
+Options -Indexes
+
+# CORS pour Flutter/Mobile/Web
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "POST, GET, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+</IfModule>
+
+# Gérer preflight OPTIONS
+RewriteEngine On
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]
+
+# Ne jamais réécrire les fichiers .php existants
+RewriteRule ^tiktok-video\.php$ - [L]
+RewriteRule ^download-proxy\.php$ - [L]
+RewriteRule ^authentification\.php$ - [L]
+
+# Réécriture propre des URLs d'API (routes courtes uniquement)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([a-zA-Z0-9_-]+)$ authentification.php?action=$1 [QSA,L]
+
+# Compression JSON
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE application/json
+</IfModule>

@@ -1,0 +1,3 @@
+npx vite --port=4000
+
+cd node_modules/.pnpm/puppeteer@1.20.0/node_modules/puppeteer && npx node install.js

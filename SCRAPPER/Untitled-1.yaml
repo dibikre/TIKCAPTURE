@@ -1,0 +1,28 @@
+name: blocks[23].data[3].state.roomStore.roomInfo.room.owner.nickname
+creator_pic: blocks[23].data[3].state.roomStore.roomInfo.anchor.avatar_thumb.url_list[0]
+status_live: blocks[23].data[3].state.roomStore.roomInfo.room.status (2 signifie en live, 4 live desactivee et 0 pour hors ligne)
+room_id: blocks[23].data[3].state.roomStore.roomInfo.roomId
+live_title: blocks[23].data[3].state.roomStore.roomInfo.room.title
+live_description: blocks[23].data[3].state.roomStore.roomInfo.roomExtra.signature
+follower:
+followed:
+spectator: blocks[23].data[3].state.roomStore.roomInfo.room.room_view_stats.display_value
+live_since: blocks[23].data[3].state.streamStore.streamData.H265_streamData.common.ts
+origine_quality: blocks[23].data[3].state.streamStore.streamData.H265_streamData.stream.origin
+qualities_list: blocks[23].data[3].state.streamStore.streamData
+
+https://www.douyin.com/user/MS4wLjABAAAAMnKhcGLdibIrG4eZ8ERnyEH5AE7jTR4ONTVzyInRdwDApR3iuxsZzt1XweAoHyNJ?from_tab_name=live
+
+target_uid: blocks[23].data[3].state.roomStore.roomInfo.room.owner.id_str
+
+sec_target_uid: blocks[23].data[3].state.roomStore.roomInfo.room.owner.sec_uid
+
+current_room_id: blocks[23].data[3].state.roomStore.roomInfo.roomId
+
+
+https://live.douyin.com/webcast/user/profile/?aid=6383&app_name=douyin_web&live_id=1&device_platform=web&language=fr&enter_from=web_live&cookie_enabled=true&screen_width=1920&screen_height=1080&browser_language=fr&browser_platform=Win32&browser_name=Firefox&browser_version=91.0&target_uid={target_uid}&sec_target_uid={sec_target_uid}&anchor_id=4490029790145102&sec_anchor_id={sec_target_uid}&current_room_id={current_room_id}&click_source=pc_room_info_bar&a_bogus={bogus_determinee}
+target_uid
+
+sec_target_uid
+
+current_room_id

@@ -1,0 +1,2666 @@
+"""
+MediaForge — Convertisseur multimédia tout-en-un
+Dépendances : pip install customtkinter
+FFmpeg doit être dans la variable d'environnement PATH
+"""
+
+import customtkinter as ctk
+import tkinter as tk
+from tkinter import filedialog, messagebox
+import subprocess
+import threading
+import os
+import sys
+import tempfile
+import shutil
+import urllib.request
+import urllib.parse
+import urllib.error
+import datetime
+from pathlib import Path
+from typing import List
+
+# ─── Import local doodstream_api ──────────────────────────────────────────────
+try:
+    sys.path.insert(0, str(Path(sys.argv[0]).resolve().parent))
+    from doodstream_api import get_api as _get_dood_api
+    DOOD_AVAILABLE = True
+except ImportError:
+    DOOD_AVAILABLE = False
+
+# ─── Répertoire du script ─────────────────────────────────────────────────────
+SCRIPT_DIR = Path(sys.argv[0]).resolve().parent
+
+# ─── Thème global ────────────────────────────────────────────────────────────
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("blue")
+
+COLORS = {
+    "bg":      "#0D0F14",
+    "panel":   "#161921",
+    "card":    "#1E2330",
+    "border":  "#2A2F42",
+    "accent":  "#4F8EF7",
+    "accent2": "#A259FF",
+    "accent3": "#00D4AA",
+    "accent4": "#FF6B35",
+    "text":    "#E8EAF0",
+    "muted":   "#6B7280",
+    "success": "#22C55E",
+    "warning": "#F59E0B",
+    "error":   "#EF4444",
+}
+
+FONTS = {
+    "title":   ("Segoe UI", 22, "bold"),
+    "heading": ("Segoe UI", 14, "bold"),
+    "body":    ("Segoe UI", 12),
+    "small":   ("Segoe UI", 10),
+    "mono":    ("Consolas", 11),
+}
+
+VIDEO_FILETYPES = [
+    ("Fichiers vidéo", "*.mp4 *.mkv *.avi *.mov *.wmv *.flv *.webm *.ts *.m2ts *.mts *.vob"),
+    ("Tous les fichiers", "*.*"),
+]
+
+
+# ─── Utilitaires FFmpeg ───────────────────────────────────────────────────────
+
+def run_ffmpeg_sync(cmd, log_cb):
+    """Lance ffmpeg de façon synchrone, retourne True si succès."""
+    try:
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        for line in process.stdout:
+            log_cb(line.rstrip())
+        process.wait()
+        return process.returncode == 0
+    except FileNotFoundError:
+        log_cb("❌ FFmpeg introuvable. Vérifiez votre variable PATH.")
+        return False
+    except Exception as e:
+        log_cb("❌ Erreur FFmpeg : {}".format(e))
+        return False
+
+
+# ─── Widget : zone de log ─────────────────────────────────────────────────────
+
+class LogBox(ctk.CTkFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, fg_color=COLORS["card"], corner_radius=10, **kwargs)
+        self._text = ctk.CTkTextbox(
+            self, font=FONTS["mono"],
+            fg_color=COLORS["card"], text_color=COLORS["muted"],
+            wrap="word", activate_scrollbars=True,
+        )
+        self._text.pack(fill="both", expand=True, padx=8, pady=8)
+        self._text.configure(state="disabled")
+
+    def append(self, msg):
+        self._text.configure(state="normal")
+        self._text.insert("end", msg + "\n")
+        self._text.see("end")
+        self._text.configure(state="disabled")
+
+    def clear(self):
+        self._text.configure(state="normal")
+        self._text.delete("1.0", "end")
+        self._text.configure(state="disabled")
+
+    def set(self, msg):
+        self._text.configure(state="normal")
+        self._text.delete("1.0", "end")
+        self._text.insert("1.0", msg)
+        self._text.configure(state="disabled")
+
+
+# ─── Widget : sélecteur de fichier ───────────────────────────────────────────
+
+class FilePicker(ctk.CTkFrame):
+    def __init__(self, master, label="Fichier", filetypes=None, accent=None, **kwargs):
+        super().__init__(master, fg_color=COLORS["card"], corner_radius=10, **kwargs)
+        self._filetypes = filetypes or [("Tous", "*.*")]
+        self._accent = accent or COLORS["accent"]
+        self._path = tk.StringVar()
+
+        ctk.CTkLabel(self, text=label, font=FONTS["small"],
+                     text_color=COLORS["muted"]).pack(anchor="w", padx=14, pady=(10, 2))
+
+        row = ctk.CTkFrame(self, fg_color="transparent")
+        row.pack(fill="x", padx=10, pady=(0, 10))
+
+        ctk.CTkEntry(
+            row, textvariable=self._path,
+            font=FONTS["body"], fg_color=COLORS["border"],
+            border_color=COLORS["border"], text_color=COLORS["text"],
+            placeholder_text="Aucun fichier sélectionné…",
+        ).pack(side="left", fill="x", expand=True, padx=(0, 8))
+
+        ctk.CTkButton(
+            row, text="Parcourir", width=100,
+            font=FONTS["body"], corner_radius=8,
+            fg_color=self._accent, hover_color=self._accent,
+            command=self._browse,
+        ).pack(side="right")
+
+    def _browse(self):
+        p = filedialog.askopenfilename(filetypes=self._filetypes)
+        if p:
+            self._path.set(p)
+
+    @property
+    def path(self):
+        return self._path.get()
+
+
+# ─── Onglet : Vidéo → MP4 ────────────────────────────────────────────────────
+
+class VideoToMP4Tab(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master, fg_color="transparent")
+        self._busy = False
+        self._build()
+
+    def _build(self):
+        hdr = ctk.CTkFrame(self, fg_color=COLORS["panel"], corner_radius=12)
+        hdr.pack(fill="x", padx=20, pady=(20, 10))
+        ctk.CTkLabel(hdr, text="🎬  Convertir en MP4",
+                     font=FONTS["title"], text_color=COLORS["text"]).pack(anchor="w", padx=20, pady=14)
+        ctk.CTkLabel(hdr, text="Supporte tous les formats FFmpeg : MKV, AVI, MOV, WMV, TS, FLV…",
+                     font=FONTS["small"], text_color=COLORS["muted"]).pack(anchor="w", padx=20, pady=(0, 14))
+
+        self._picker = FilePicker(self, label="FICHIER SOURCE",
+                                  filetypes=VIDEO_FILETYPES, accent=COLORS["accent"])
+        self._picker.pack(fill="x", padx=20, pady=6)
+
+        opts = ctk.CTkFrame(self, fg_color=COLORS["card"], corner_radius=10)
+        opts.pack(fill="x", padx=20, pady=6)
+        ctk.CTkLabel(opts, text="OPTIONS D'ENCODAGE", font=FONTS["small"],
+                     text_color=COLORS["muted"]).pack(anchor="w", padx=14, pady=(10, 4))
+        row = ctk.CTkFrame(opts, fg_color="transparent")
+        row.pack(fill="x", padx=10, pady=(0, 10))
+
+        for label, values, default, attr in [
+            ("Codec vidéo", ["copy", "libx264", "libx265", "libvpx-vp9"], "copy", "_vcodec"),
+            ("Codec audio", ["copy", "aac", "libmp3lame", "ac3"],         "copy", "_acodec"),
+        ]:
+            col = ctk.CTkFrame(row, fg_color="transparent")
+            col.pack(side="left", fill="x", expand=True, padx=4)
+            ctk.CTkLabel(col, text=label, font=FONTS["small"],
+                         text_color=COLORS["muted"]).pack(anchor="w")
+            opt = ctk.CTkOptionMenu(col, values=values, font=FONTS["body"],
+                                    fg_color=COLORS["border"], button_color=COLORS["accent"],
+                                    dropdown_fg_color=COLORS["card"])
+            opt.set(default)
+            opt.pack(fill="x", pady=4)
+            setattr(self, attr, opt)
+
+        qcol = ctk.CTkFrame(row, fg_color="transparent")
+        qcol.pack(side="left", fill="x", expand=True, padx=4)
+        ctk.CTkLabel(qcol, text="CRF (libx264/265)", font=FONTS["small"],
+                     text_color=COLORS["muted"]).pack(anchor="w")
+        self._crf = ctk.CTkEntry(qcol, font=FONTS["body"], fg_color=COLORS["border"],
+                                  border_color=COLORS["border"], text_color=COLORS["text"],
+                                  placeholder_text="23")
+        self._crf.pack(fill="x", pady=4)
+
+        self._btn = ctk.CTkButton(self, text="  Convertir en MP4", font=FONTS["heading"],
+                                   height=48, corner_radius=12,
+                                   fg_color=COLORS["accent"], hover_color="#3A7AEE",
+                                   command=self._convert)
+        self._btn.pack(fill="x", padx=20, pady=10)
+        self._progress = ctk.CTkProgressBar(self, mode="indeterminate",
+                                             progress_color=COLORS["accent"])
+        self._progress.pack(fill="x", padx=20, pady=(0, 6))
+        ctk.CTkLabel(self, text="JOURNAL", font=FONTS["small"],
+                     text_color=COLORS["muted"]).pack(anchor="w", padx=24)
+        self._log = LogBox(self)
+        self._log.pack(fill="both", expand=True, padx=20, pady=(4, 20))
+
+    def _convert(self):
+        if self._busy:
+            return
+        src = self._picker.path
+        if not src or not os.path.isfile(src):
+            messagebox.showerror("Erreur", "Veuillez sélectionner un fichier vidéo valide.")
+            return
+        dst = filedialog.asksaveasfilename(
+            defaultextension=".mp4",
+            initialfile=Path(src).stem + "_converti.mp4",
+            filetypes=[("MP4", "*.mp4")],
+        )
+        if not dst:
+            return
+
+        vc = self._vcodec.get()
+        ac = self._acodec.get()
+        crf = self._crf.get().strip() or "23"
+        cmd = ["ffmpeg", "-y", "-i", src, "-c:v", vc]
+        if vc in ("libx264", "libx265"):
+            cmd += ["-crf", crf, "-preset", "fast"]
+        cmd += ["-c:a", ac]
+        if dst.lower().endswith(".mp4"):
+            cmd += ["-movflags", "+faststart"]
+        cmd += [dst]
+
+        self._log.clear()
+        self._log.append("▶ Commande : {}\n".format(" ".join(cmd)))
+        self._busy = True
+        self._btn.configure(state="disabled", text="  Conversion en cours…")
+        self._progress.start()
+
+        def worker():
+            ok = run_ffmpeg_sync(cmd, lambda m: self.after(0, lambda msg=m: self._log.append(msg)))
+            def finish():
+                self._progress.stop()
+                self._busy = False
+                self._btn.configure(state="normal", text="  Convertir en MP4")
+                self._log.append("\n{}".format(
+                    "✅ Fichier enregistré : " + dst if ok else "❌ La conversion a échoué."
+                ))
+            self.after(0, finish)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LIVE RECORDER — Gestionnaire d'enregistrements de flux en direct
+# ═══════════════════════════════════════════════════════════════════════════════
+
+import json
+import time
+import random
+import re
+import math
+
+# Registre global des enregistrements actifs
+LIVE_REGISTRY = {}
+LIVE_REGISTRY_LOCK = threading.Lock()
+
+
+def _safe_stem(name: str) -> str:
+    """Nettoie une chaîne pour en faire un nom de fichier valide."""
+    name = re.sub(r'[\\/:*?"<>|]', "_", name)
+    return name[:80]
+
+
+class LiveSession:
+    """Représente un enregistrement de live en cours."""
+
+    PREVIEW_INTERVAL = 10
+
+    def __init__(self, session_id, url, label, out_dir, on_update):
+        self.session_id   = session_id
+        self.url          = url
+        self.label        = label
+        self.out_dir      = Path(out_dir)
+        self.on_update    = on_update
+
+        self.status       = "init"
+        self.start_time   = None
+        self.stop_event   = threading.Event()
+        self.ffmpeg_proc  = None
+        self.log_lines    = []
+        self.video_file   = None
+        self.json_data    = None
+        self.rec_dir      = None
+        self.thumb_dir    = None
+
+        self.latest_thumb = None
+        self.thumb_index  = 0
+
+        self._thread = threading.Thread(target=self._run, daemon=True)
+        self._thread.start()
+
+    def _log(self, msg):
+        ts = time.strftime("%H:%M:%S")
+        line = "[{}] {}".format(ts, msg)
+        self.log_lines.append(line)
+        self.on_update(self.session_id, "log", line)
+
+    def _set_status(self, s):
+        self.status = s
+        self.on_update(self.session_id, "status", s)
+
+    def stop(self):
+        self._log("⏹ Arrêt demandé…")
+        self.stop_event.set()
+        if self.ffmpeg_proc and self.ffmpeg_proc.poll() is None:
+            try:
+                self.ffmpeg_proc.terminate()
+            except Exception:
+                pass
+
+    def _run(self):
+        try:
+            self._set_status("fetching")
+            self._log("🔍 Récupération des infos du flux (yt-dlp)…")
+            stream_url, json_data, file_ext, ffmpeg_fmt = self._fetch_stream_url()
+            if self.stop_event.is_set():
+                self._set_status("stopped")
+                return
+            self.json_data = json_data
+
+            title    = json_data.get("title",    "live")    or "live"
+            uploader = json_data.get("uploader", "unknown") or "unknown"
+            safe_title = _safe_stem("{}_{}".format(uploader, title))
+            timestamp  = time.strftime("%Y%m%d_%H%M%S")
+            rec_name   = "{}_{}".format(safe_title, timestamp)
+
+            rec_dir = self.out_dir / rec_name
+            rec_dir.mkdir(parents=True, exist_ok=True)
+            self.rec_dir = rec_dir
+
+            json_path = rec_dir / "info.json"
+            json_path.write_text(
+                json.dumps(json_data, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+            self._log("JSON sauvegarde : {}".format(json_path))
+
+            thumb_dir = rec_dir / "vignettes"
+            thumb_dir.mkdir(exist_ok=True)
+            self.thumb_dir = thumb_dir
+
+            video_path = rec_dir / "{}.ts".format(rec_name)
+            self.video_file = str(video_path)
+            self._log("Fichier sortie : {}".format(video_path))
+
+            # Récupération photo de profil en arrière-plan
+            threading.Thread(
+                target=self._fetch_profile_pic,
+                args=(rec_dir,),
+                daemon=True,
+            ).start()
+
+            self._record_loop(stream_url, str(video_path), rec_dir=rec_dir)
+
+        except Exception as e:
+            self._log("❌ Erreur critique : {}".format(e))
+            self._set_status("stopped")
+        finally:
+            self._set_status("done")
+            self.on_update(self.session_id, "done", None)
+
+    def _fetch_profile_pic(self, rec_dir: Path):
+        """Télécharge la photo de profil via yt-dlp dès le début de l'enregistrement."""
+        self._log("📸 Récupération photo de profil…")
+        import tempfile as _tf
+        tmp_dir = _tf.mkdtemp(prefix="profpic_")
+        out_tpl = os.path.join(tmp_dir, "profil_pic")
+        try:
+            cookies_file = str(SCRIPT_DIR / "cookies_tk.txt")
+            ret = subprocess.run(
+                ["yt-dlp", "--write-thumbnail", "--skip-download",
+                 "--cookies", cookies_file,
+                 "-o", out_tpl, self.url],
+                capture_output=True, text=True, timeout=40,
+            )
+            for f in Path(tmp_dir).iterdir():
+                if f.is_file() and f.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp"):
+                    dest = rec_dir / "profil_pic{}".format(f.suffix)
+                    shutil.copy2(str(f), str(dest))
+                    self._log("  ✅ Photo de profil : {}".format(dest.name))
+                    return
+            self._log("  ⚠ Aucune photo de profil trouvée")
+        except Exception as e:
+            self._log("  ⚠ Photo de profil échouée : {}".format(e))
+        finally:
+            shutil.rmtree(tmp_dir, ignore_errors=True)
+
+    def _find_profile_pic(self):
+        """Retourne le chemin relatif de la photo de profil si elle existe."""
+        if not self.rec_dir:
+            return None
+        for ext in (".jpg", ".jpeg", ".png", ".webp"):
+            p = self.rec_dir / "profil_pic{}".format(ext)
+            if p.is_file():
+                return p.name
+        return None
+
+    def _fetch_stream_url(self):
+        cookies_file = str(SCRIPT_DIR / "cookies_tk.txt")
+        cmd  = ["yt-dlp", "-J", "--no-playlist",
+                "--cookies", cookies_file,
+                self.url]
+        proc = subprocess.run(
+            cmd, capture_output=True, text=True, encoding="utf-8", errors="replace"
+        )
+        if proc.returncode != 0:
+            raise RuntimeError("yt-dlp a echoue : {}".format(proc.stderr[:300]))
+        data = json.loads(proc.stdout)
+
+        def _score(fmt):
+            q        = fmt.get("quality", -999) or -999
+            protocol = (fmt.get("protocol")  or "").lower()
+            fmt_id   = (fmt.get("format_id") or "").lower()
+            ext      = (fmt.get("ext")       or "").lower()
+
+            if fmt.get("audio_ext") == "none" and fmt.get("video_ext") == "none":
+                return -9999
+            if "ao" in fmt_id:
+                return -9999
+
+            if "m3u8" in protocol or "hls" in fmt_id:
+                proto_bonus = 3
+            elif ext == "mp4" or "mp4" in fmt_id:
+                proto_bonus = 2
+            elif ext == "flv" or "flv" in fmt_id:
+                proto_bonus = 1
+            else:
+                proto_bonus = 0
+
+            return q * 10 + proto_bonus
+
+        best_url      = None
+        best_score    = -99999
+        best_fmt_info = {}
+
+        for fmt in data.get("formats", []):
+            if not fmt.get("url"):
+                continue
+            s = _score(fmt)
+            if s > best_score:
+                best_score    = s
+                best_url      = fmt["url"]
+                best_fmt_info = fmt
+
+        if not best_url:
+            best_url      = data.get("url", "")
+            best_fmt_info = {}
+
+        if not best_url:
+            raise RuntimeError("Aucune URL de flux trouvee dans le JSON yt-dlp")
+
+        src_ext      = (best_fmt_info.get("ext")       or "?").lower()
+        src_protocol = (best_fmt_info.get("protocol")  or "?").lower()
+        src_fmt_id   = (best_fmt_info.get("format_id") or "?")
+        resolution   = best_fmt_info.get("resolution") or "?"
+        tbr          = best_fmt_info.get("tbr")
+
+        self._log("Format choisi : {} | {} | {} | {} | {}".format(
+            src_fmt_id, src_ext, src_protocol, resolution,
+            "{}kbps".format(int(tbr)) if tbr else "tbr=?"))
+        self._log("Score selection : {}  (qualite={})".format(
+            best_score, best_fmt_info.get("quality", "?")))
+        self._log("Sortie : .ts / mpegts (conteneur live universel)")
+
+        return best_url, data, "ts", "mpegts"
+
+    def _thumb_worker(self):
+        while not self.stop_event.is_set():
+            for _ in range(self.PREVIEW_INTERVAL):
+                if self.stop_event.is_set():
+                    return
+                time.sleep(1)
+
+            if not self.video_file or not os.path.isfile(self.video_file):
+                continue
+            if os.path.getsize(self.video_file) < 50_000:
+                continue
+
+            self.thumb_index += 1
+            out_path = str(self.thumb_dir / "thumb_{:05d}.jpg".format(self.thumb_index))
+
+            cmd = [
+                "ffmpeg", "-y",
+                "-sseof", "-3",
+                "-i", self.video_file,
+                "-frames:v", "1",
+                "-q:v", "3",
+                "-vf", "scale=320:-2",
+                out_path,
+            ]
+            try:
+                ret = subprocess.run(
+                    cmd,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    timeout=15,
+                )
+                if ret.returncode == 0 and os.path.isfile(out_path):
+                    self.latest_thumb = out_path
+                    self.on_update(self.session_id, "new_thumb", out_path)
+            except Exception:
+                pass
+
+    def _record_loop(self, stream_url, video_path, ffmpeg_fmt="mpegts", rec_dir=None):
+        MAX_SEGMENT_SEC = 30 * 60   # 30 minutes
+        retry_seconds   = 20
+        self._set_status("recording")
+        self.start_time = time.time()
+        segment_index   = 0
+
+        thumb_t = threading.Thread(target=self._thumb_worker, daemon=True)
+        thumb_t.start()
+
+        while not self.stop_event.is_set():
+            # ── Nom du segment courant ──
+            if segment_index == 0:
+                current_video = video_path
+            else:
+                base = Path(video_path)
+                current_video = str(
+                    base.parent / "{}_part{:02d}{}".format(
+                        base.stem, segment_index + 1, base.suffix)
+                )
+            self.video_file = current_video
+
+            self._log("Lancement ffmpeg… segment {} → {}".format(
+                segment_index + 1, Path(current_video).name))
+
+            cmd_rec = [
+                "ffmpeg", "-y",
+                "-i", stream_url,
+                "-c", "copy",
+                "-t", str(MAX_SEGMENT_SEC),   # ← limite 30 min
+                "-f", "mpegts",
+                current_video,
+            ]
+            try:
+                self.ffmpeg_proc = subprocess.Popen(
+                    cmd_rec,
+                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                    text=True, encoding="utf-8", errors="replace",
+                )
+            except FileNotFoundError:
+                self._log("❌ ffmpeg introuvable")
+                break
+
+            for line in self.ffmpeg_proc.stdout:
+                line = line.rstrip()
+                if line:
+                    self._log(line)
+                if self.stop_event.is_set():
+                    self.ffmpeg_proc.terminate()
+                    break
+
+            self.ffmpeg_proc.wait()
+            rc = self.ffmpeg_proc.returncode
+
+            # ── Post-process TOUJOURS lancé si le fichier existe ──────────
+            if os.path.isfile(current_video):
+                size_mb = os.path.getsize(current_video) / (1024 * 1024)
+                self._log("✅ Segment {} sauvegardé ({:.1f} Mo)".format(
+                    segment_index + 1, size_mb))
+                if rec_dir:
+                    seg_path = current_video
+                    threading.Thread(
+                        target=self._post_process,
+                        args=(seg_path, rec_dir),
+                        daemon=True,
+                    ).start()
+
+            if self.stop_event.is_set():
+                self._log("⏹ Enregistrement arrêté — post-processing en cours…")
+                break
+
+            segment_index += 1
+
+            # Re-fetch URL pour le prochain segment
+            self._log("🔄 Re-fetch URL pour le segment {}…".format(segment_index + 1))
+            self._set_status("fetching")
+            attempt = 0
+            while not self.stop_event.is_set():
+                attempt += 1
+                try:
+                    stream_url, _, _ext, _fmt = self._fetch_stream_url()
+                    self._log("✅ URL segment {} obtenue.".format(segment_index + 1))
+                    self._set_status("recording")
+                    break
+                except Exception as e:
+                    self._log("❌ Tentative {} : {} — attente {}s…".format(
+                        attempt, e, retry_seconds))
+                    self._set_status("retrying")
+                    for i in range(retry_seconds):
+                        if self.stop_event.is_set():
+                            break
+                        time.sleep(1)
+                        self.on_update(self.session_id, "retry_countdown",
+                                       retry_seconds - i - 1)
+
+    def _post_process(self, video_path, rec_dir):
+        self._log("\n🎞 Post-processing…")
+        dur_cmd = ["ffprobe", "-v", "quiet", "-print_format", "json",
+                   "-show_format", video_path]
+        try:
+            res      = subprocess.run(dur_cmd, capture_output=True, text=True, encoding="utf-8")
+            probe    = json.loads(res.stdout)
+            duration = float(probe.get("format", {}).get("duration", 0))
+        except Exception:
+            duration = 0
+        self._log("  Durée vidéo : {:.1f} s".format(duration))
+
+        if duration > 2:
+            rand_t   = random.uniform(1, max(duration - 1, 2))
+            rand_img = str(rec_dir / "snapshot_random.jpg")
+            ret = subprocess.run([
+                "ffmpeg", "-y", "-ss", str(rand_t), "-i", video_path,
+                "-frames:v", "1", "-q:v", "2", rand_img,
+            ], capture_output=True)
+            if ret.returncode == 0:
+                self._log("  📸 Snapshot aléatoire : {}".format(rand_img))
+        else:
+            self._log("  ⚠ Vidéo trop courte pour snapshot")
+
+        if duration > 5:
+            cols, rows     = 6, 6
+            total          = cols * rows
+            CELL_W         = 320
+            CELL_H         = 180
+            sprite_path    = str(rec_dir / "sprite_6x6.jpg")
+
+            step       = duration / total
+            timestamps = [step * (i + 0.5) for i in range(total)]
+
+            import tempfile as _tf
+            import shutil as _sh
+            tmp_frames_dir = None
+            try:
+                tmp_frames_dir = _tf.mkdtemp(prefix="sprite_")
+                ok_frames  = 0
+                last_good  = None
+                frame_paths = []
+
+                for i, ts in enumerate(timestamps):
+                    frame_path = os.path.join(tmp_frames_dir, "f_{:02d}.jpg".format(i))
+                    ret_f = subprocess.run([
+                        "ffmpeg", "-y",
+                        "-ss", "{:.6f}".format(ts),
+                        "-i", video_path,
+                        "-frames:v", "1",
+                        "-vf", (
+                            "scale={w}:{h}:force_original_aspect_ratio=decrease,"
+                            "pad={w}:{h}:(ow-iw)/2:(oh-ih)/2:color=black"
+                        ).format(w=CELL_W, h=CELL_H),
+                        "-q:v", "2",
+                        frame_path,
+                    ], capture_output=True, timeout=30)
+
+                    if ret_f.returncode == 0 and os.path.isfile(frame_path):
+                        ok_frames += 1
+                        last_good  = frame_path
+                        frame_paths.append(frame_path)
+                    elif last_good:
+                        _sh.copy2(last_good, frame_path)
+                        ok_frames += 1
+                        frame_paths.append(frame_path)
+                    else:
+                        frame_paths.append(None)
+
+                self._log("  {} frames extraites sur {}".format(ok_frames, total))
+
+                if ok_frames > 0:
+                    try:
+                        from PIL import Image as _PILImg, ImageDraw as _PILDraw
+                        sprite = _PILImg.new("RGB",
+                            (CELL_W * cols, CELL_H * rows), (10, 10, 20))
+                        draw = _PILDraw.Draw(sprite)
+                        for idx, fp in enumerate(frame_paths):
+                            col = idx % cols
+                            row = idx // rows
+                            ts  = timestamps[idx]
+                            tc_h = int(ts // 3600)
+                            tc_m = int((ts % 3600) // 60)
+                            tc_s = int(ts % 60)
+                            tc   = "{:02d}:{:02d}:{:02d}".format(tc_h, tc_m, tc_s)
+                            x0   = col * CELL_W
+                            y0   = row * CELL_H
+                            if fp and os.path.isfile(fp):
+                                try:
+                                    cell = _PILImg.open(fp).resize(
+                                        (CELL_W, CELL_H), _PILImg.LANCZOS)
+                                    sprite.paste(cell, (x0, y0))
+                                except Exception:
+                                    pass
+                            tx = x0 + 5
+                            ty = y0 + CELL_H - 22
+                            draw.text((tx + 1, ty + 1), tc, fill=(0, 0, 0))
+                            draw.text((tx,     ty    ), tc, fill=(0, 255, 120))
+                        sprite.save(sprite_path, "JPEG", quality=88)
+                        self._log("  Sprite 6x6 (1920x1080, step={:.1f}s, Pillow) : {}".format(
+                            step, sprite_path))
+                    except ImportError:
+                        pattern  = os.path.join(tmp_frames_dir, "f_%02d.jpg")
+                        ret_tile = subprocess.run([
+                            "ffmpeg", "-y", "-i", pattern,
+                            "-frames:v", "1",
+                            "-vf", "tile={}x{}".format(cols, rows),
+                            "-q:v", "2", sprite_path,
+                        ], capture_output=True)
+                        if ret_tile.returncode == 0 and os.path.isfile(sprite_path):
+                            self._log("  Sprite 6x6 (1920x1080, step={:.1f}s, ffmpeg) : {}".format(
+                                step, sprite_path))
+                        else:
+                            self._log("  Assemblage sprite echoue (installez Pillow pour timecodes)")
+            except Exception as e_sprite:
+                self._log("  Sprite echoue : {}".format(e_sprite))
+            finally:
+                if tmp_frames_dir:
+                    _sh.rmtree(tmp_frames_dir, ignore_errors=True)
+
+        # ── Extraction audio compressé ────────────────────────────────────
+        self._log("\n🎵 Extraction audio…")
+        audio_path = str(Path(video_path).parent / (Path(video_path).stem + "_audio.m4a"))
+        cmd_audio = [
+            "ffmpeg", "-y",
+            "-i", video_path,
+            "-vn",                      # pas de vidéo
+            "-c:a", "aac",              # codec AAC
+            "-b:a", "48k",              # bitrate 48kbps — léger + lisible par Whisper
+            "-ac", "1",                 # mono (suffit pour la parole)
+            "-ar", "16000",             # 16kHz (fréquence optimale pour Whisper)
+            audio_path,
+        ]
+        try:
+            ret_audio = subprocess.run(cmd_audio, capture_output=True, timeout=300)
+            if ret_audio.returncode == 0 and os.path.isfile(audio_path):
+                size_kb = os.path.getsize(audio_path) // 1024
+                self._log("  ✅ Audio : {} ({} Ko)".format(
+                    Path(audio_path).name, size_kb))
+            else:
+                self._log("  ⚠ Extraction audio échouée")
+        except Exception as e:
+            self._log("  ⚠ Audio erreur : {}".format(e))
+
+        self._log("✅ Post-processing terminé.")
+        self.on_update(self.session_id, "post_done", str(rec_dir))
+
+
+# ─── Onglet : Enregistrement Live ────────────────────────────────────────────
+
+class LiveRecorderTab(ctk.CTkFrame):
+    def __init__(self, master, registry_tab=None):
+        super().__init__(master, fg_color="transparent")
+        self._registry_tab = registry_tab
+        self._build()
+
+    def set_registry_tab(self, tab):
+        self._registry_tab = tab
+
+    def _build(self):
+        hdr = ctk.CTkFrame(self, fg_color=COLORS["panel"], corner_radius=12)
+        hdr.pack(fill="x", padx=20, pady=(20, 10))
+        title_row = ctk.CTkFrame(hdr, fg_color="transparent")
+        title_row.pack(fill="x", padx=20, pady=14)
+        ctk.CTkLabel(title_row, text="🔴  Live Recorder",
+                     font=FONTS["title"], text_color="#FF4444").pack(side="left")
+        badge = ctk.CTkFrame(title_row, fg_color="#FF4444", corner_radius=20)
+        badge.pack(side="left", padx=14)
+        ctk.CTkLabel(badge, text="yt-dlp + FFmpeg", font=FONTS["small"],
+                     text_color="white").pack(padx=10, pady=4)
+        ctk.CTkLabel(
+            hdr,
+            text=("Collez l'URL d'un live (TikTok, YouTube, Twitch, etc.)\n"
+                  "Enregistrement .ts  •  Aperçu toutes les 10 s  •  Retry auto 20 s\n"
+                  "À l'arrêt : snapshot aléatoire + sprite 6×6 générés automatiquement"),
+            font=FONTS["small"], text_color=COLORS["muted"], justify="left",
+        ).pack(anchor="w", padx=20, pady=(0, 14))
+
+        url_frame = ctk.CTkFrame(self, fg_color=COLORS["card"], corner_radius=10)
+        url_frame.pack(fill="x", padx=20, pady=6)
+        ctk.CTkLabel(url_frame, text="URL DU LIVE", font=FONTS["small"],
+                     text_color=COLORS["muted"]).pack(anchor="w", padx=14, pady=(10, 2))
+        url_row = ctk.CTkFrame(url_frame, fg_color="transparent")
+        url_row.pack(fill="x", padx=10, pady=(0, 10))
+        self._url_var = tk.StringVar()
+        ctk.CTkEntry(
+            url_row, textvariable=self._url_var, font=FONTS["body"],
+            fg_color=COLORS["border"], border_color=COLORS["border"],
+            text_color=COLORS["text"], height=40,
+            placeholder_text="https://www.tiktok.com/@user/live  ou  https://youtube.com/…",
+        ).pack(side="left", fill="x", expand=True, padx=(0, 8))
+        ctk.CTkButton(url_row, text="📋 Coller", width=80, height=40,
+                      font=FONTS["body"], corner_radius=8,
+                      fg_color=COLORS["border"], hover_color=COLORS["card"],
+                      command=self._paste_url).pack(side="right")
+
+        opt_frame = ctk.CTkFrame(self, fg_color=COLORS["card"], corner_radius=10)
+        opt_frame.pack(fill="x", padx=20, pady=6)
+        ctk.CTkLabel(opt_frame, text="OPTIONS", font=FONTS["small"],
+                     text_color=COLORS["muted"]).pack(anchor="w", padx=14, pady=(10, 4))
+        opt_row = ctk.CTkFrame(opt_frame, fg_color="transparent")
+        opt_row.pack(fill="x", padx=10, pady=(0, 10))
+
+        c1 = ctk.CTkFrame(opt_row, fg_color="transparent")
+        c1.pack(side="left", fill="x", expand=True, padx=4)
+        ctk.CTkLabel(c1, text="Dossier de sortie", font=FONTS["small"],
+                     text_color=COLORS["muted"]).pack(anchor="w")
+        dir_row = ctk.CTkFrame(c1, fg_color="transparent")
+        dir_row.pack(fill="x")
+        self._out_var = tk.StringVar(value=str(SCRIPT_DIR / "lives"))
+        ctk.CTkEntry(dir_row, textvariable=self._out_var, font=FONTS["small"],
+                     fg_color=COLORS["border"], border_color=COLORS["border"],
+                     text_color=COLORS["text"]).pack(side="left", fill="x", expand=True, padx=(0, 4))
+        ctk.CTkButton(dir_row, text="📁", width=36, height=30,
+                      fg_color=COLORS["border"], hover_color=COLORS["card"],
+                      command=self._pick_dir).pack(side="right")
+
+        c2 = ctk.CTkFrame(opt_row, fg_color="transparent")
+        c2.pack(side="left", fill="x", expand=True, padx=4)
+        ctk.CTkLabel(c2, text="Nom / Label (optionnel)", font=FONTS["small"],
+                     text_color=COLORS["muted"]).pack(anchor="w")
+        self._label_var = tk.StringVar()
+        ctk.CTkEntry(c2, textvariable=self._label_var, font=FONTS["body"],
+                     fg_color=COLORS["border"], border_color=COLORS["border"],
+                     text_color=COLORS["text"],
+                     placeholder_text="ex: TikTok Rose live").pack(fill="x", pady=4)
+
+        self._btn = ctk.CTkButton(
+            self, text="  🔴  Démarrer l'enregistrement",
+            font=("Segoe UI", 14, "bold"), height=52, corner_radius=12,
+            fg_color="#CC2222", hover_color="#991111", command=self._start,
+        )
+        self._btn.pack(fill="x", padx=20, pady=12)
+
+        ctk.CTkLabel(self, text="JOURNAL", font=FONTS["small"],
+                     text_color=COLORS["muted"]).pack(anchor="w", padx=24)
+        self._log = LogBox(self)
+        self._log.pack(fill="both", expand=True, padx=20, pady=(4, 20))
+
+    def _paste_url(self):
+        try:
+            self._url_var.set(self.clipboard_get())
+        except Exception:
+            pass
+
+    def _pick_dir(self):
+        d = filedialog.askdirectory()
+        if d:
+            self._out_var.set(d)
+
+    def _start(self):
+        url = self._url_var.get().strip()
+        if not url:
+            messagebox.showerror("Erreur", "Veuillez entrer une URL.")
+            return
+        label   = self._label_var.get().strip() or url[:50]
+        out_dir = self._out_var.get().strip() or str(SCRIPT_DIR / "lives")
+
+        session_id = "live_{}".format(int(time.time() * 1000))
+        self._log.clear()
+        self._log.append("🚀 Démarrage session {}".format(session_id))
+        self._log.append("   URL    : {}".format(url))
+        self._log.append("   Sortie : {}".format(out_dir))
+
+        def on_update(sid, event, data):
+            if event == "log":
+                self.after(0, lambda m=data: self._log.append(m))
+            elif event == "done":
+                self.after(0, lambda: self._log.append("\n✅ Session {} terminée.".format(sid)))
+
+        sess = LiveSession(session_id, url, label, out_dir, on_update)
+        with LIVE_REGISTRY_LOCK:
+            LIVE_REGISTRY[session_id] = sess
+
+        if self._registry_tab:
+            self.after(200, lambda: self._registry_tab.refresh())
+
+
+# ─── Onglet : Moniteur des enregistrements ───────────────────────────────────
+
+class LiveMonitorTab(ctk.CTkFrame):
+    CARD_THUMB_W = 200
+    CARD_THUMB_H = 355
+
+    def __init__(self, master):
+        super().__init__(master, fg_color="transparent")
+        self._cards = {}
+        self._tk_images = {}
+        self._build()
+        self._poll()
+
+    def _build(self):
+        hdr = ctk.CTkFrame(self, fg_color=COLORS["panel"], corner_radius=12)
+        hdr.pack(fill="x", padx=20, pady=(20, 10))
+        hdr_row = ctk.CTkFrame(hdr, fg_color="transparent")
+        hdr_row.pack(fill="x", padx=20, pady=14)
+        ctk.CTkLabel(hdr_row, text="📡  Enregistrements en cours",
+                     font=FONTS["title"], text_color=COLORS["text"]).pack(side="left")
+        ctk.CTkButton(hdr_row, text="🔄 Rafraîchir", width=120, height=34,
+                      font=FONTS["body"], corner_radius=8,
+                      fg_color=COLORS["border"], hover_color=COLORS["card"],
+                      command=self.refresh).pack(side="right")
+
+        self._scroll = ctk.CTkScrollableFrame(self, fg_color="transparent", corner_radius=0)
+        self._scroll.pack(fill="both", expand=True, padx=20, pady=(0, 20))
+
+        self._empty_lbl = ctk.CTkLabel(
+            self._scroll,
+            text="Aucun enregistrement en cours.\nDémarrez un live depuis l'onglet 🔴 Live Recorder.",
+            font=FONTS["body"], text_color=COLORS["muted"], justify="center",
+        )
+        self._empty_lbl.pack(pady=60)
+
+    def refresh(self):
+        with LIVE_REGISTRY_LOCK:
+            sessions = dict(LIVE_REGISTRY)
+
+        to_remove = [sid for sid in self._cards if sid not in sessions]
+        for sid in to_remove:
+            self._cards.pop(sid)["frame"].destroy()
+            self._tk_images.pop(sid, None)
+
+        for sid, sess in sessions.items():
+            if sid not in self._cards:
+                self._create_card(sid, sess)
+
+        for sid, sess in sessions.items():
+            if sid in self._cards:
+                self._update_card(sid, sess)
+
+        if sessions:
+            self._empty_lbl.pack_forget()
+        else:
+            self._empty_lbl.pack(pady=60)
+
+    def _create_card(self, sid, sess):
+        jd       = sess.json_data or {}
+        title    = (jd.get("title") or sess.label or "—")[:80]
+        creator  = jd.get("creator") or jd.get("uploader") or "—"
+        fmts     = jd.get("formats", [])
+        best_fmt = max(fmts, key=lambda f: f.get("quality") or -1) if fmts else {}
+        quality  = best_fmt.get("resolution") or best_fmt.get("format") or "—"
+        fmt_id   = best_fmt.get("format_id") or best_fmt.get("ext") or "—"
+        tbr_val  = best_fmt.get("tbr")
+        tbr_str  = "{} kbps".format(int(tbr_val)) if tbr_val else "—"
+
+        frame = ctk.CTkFrame(
+            self._scroll, fg_color=COLORS["card"],
+            corner_radius=14, border_width=1, border_color=COLORS["border"],
+        )
+        frame.pack(fill="x", pady=8, padx=4)
+
+        body = ctk.CTkFrame(frame, fg_color="transparent")
+        body.pack(fill="x", padx=14, pady=14)
+
+        thumb_col = ctk.CTkFrame(body, fg_color=COLORS["border"], corner_radius=10,
+                                 width=self.CARD_THUMB_W, height=self.CARD_THUMB_H)
+        thumb_col.pack(side="left", padx=(0, 14))
+        thumb_col.pack_propagate(False)
+
+        placeholder = ctk.CTkLabel(
+            thumb_col,
+            text="📷\n\nAperçu live\ndisponible\ndans ~10 s",
+            font=FONTS["small"], text_color=COLORS["muted"], justify="center",
+        )
+        placeholder.place(relx=0.5, rely=0.5, anchor="center")
+
+        img_label = tk.Label(thumb_col, bg="#2A2F42", bd=0, cursor="hand2")
+
+        thumb_ts_lbl = ctk.CTkLabel(thumb_col, text="", font=FONTS["small"],
+                                     text_color=COLORS["muted"], fg_color=COLORS["border"])
+        thumb_ts_lbl.place(relx=0.0, rely=1.0, anchor="sw", x=6, y=-4)
+
+        info_col = ctk.CTkFrame(body, fg_color="transparent")
+        info_col.pack(side="left", fill="both", expand=True)
+
+        row1 = ctk.CTkFrame(info_col, fg_color="transparent")
+        row1.pack(fill="x", pady=(0, 6))
+
+        dot = ctk.CTkLabel(row1, text="●", font=("Segoe UI", 18),
+                            text_color=COLORS["error"])
+        dot.pack(side="left")
+
+        status_lbl = ctk.CTkLabel(row1, text="🔴 En cours",
+                                   font=FONTS["heading"], text_color=COLORS["error"])
+        status_lbl.pack(side="left", padx=8)
+
+        elapsed_lbl = ctk.CTkLabel(row1, text="00:00:00",
+                                    font=("Consolas", 18, "bold"),
+                                    text_color=COLORS["accent"])
+        elapsed_lbl.pack(side="right")
+
+        sep = ctk.CTkFrame(info_col, fg_color=COLORS["border"], height=1)
+        sep.pack(fill="x", pady=4)
+
+        title_lbl = ctk.CTkLabel(
+            info_col, text=title,
+            font=("Segoe UI", 13, "bold"), text_color=COLORS["text"],
+            wraplength=480, justify="left",
+        )
+        title_lbl.pack(anchor="w", pady=(4, 2))
+
+        creator_lbl = ctk.CTkLabel(
+            info_col, text="👤  {}".format(creator),
+            font=FONTS["body"], text_color=COLORS["accent2"],
+        )
+        creator_lbl.pack(anchor="w", pady=1)
+
+        meta_row = ctk.CTkFrame(info_col, fg_color="transparent")
+        meta_row.pack(anchor="w", pady=4)
+
+        for badge_text, badge_color in [
+            ("📐 {}".format(quality), COLORS["accent"]),
+            ("🎞 {}".format(fmt_id),  COLORS["accent3"]),
+            ("📶 {}".format(tbr_str), COLORS["warning"]),
+        ]:
+            b = ctk.CTkFrame(meta_row, fg_color=badge_color, corner_radius=20)
+            b.pack(side="left", padx=(0, 6))
+            ctk.CTkLabel(b, text=badge_text, font=FONTS["small"],
+                         text_color="white").pack(padx=10, pady=3)
+
+        url_lbl = ctk.CTkLabel(
+            info_col,
+            text="🔗  {}".format(sess.url[:70]),
+            font=FONTS["small"], text_color=COLORS["muted"],
+        )
+        url_lbl.pack(anchor="w", pady=(6, 2))
+
+        prog = ctk.CTkProgressBar(info_col, mode="indeterminate",
+                                   progress_color=COLORS["error"], height=6)
+        prog.pack(fill="x", pady=6)
+        prog.start()
+
+        btn_row = ctk.CTkFrame(info_col, fg_color="transparent")
+        btn_row.pack(fill="x", pady=(6, 0))
+
+        stop_btn = ctk.CTkButton(
+            btn_row, text="⏹  Arrêter l'enregistrement",
+            font=FONTS["heading"], height=40, corner_radius=10,
+            fg_color=COLORS["error"], hover_color="#CC2222",
+            command=lambda s=sid: self._stop_session(s),
+        )
+        stop_btn.pack(side="left", fill="x", expand=True)
+
+        del_btn = ctk.CTkButton(
+            btn_row, text="🗑", width=40, height=40,
+            font=FONTS["body"], corner_radius=10,
+            fg_color=COLORS["border"], hover_color=COLORS["card"],
+            command=lambda s=sid: self._remove_session(s),
+        )
+        del_btn.pack(side="right", padx=(6, 0))
+
+        self._cards[sid] = {
+            "frame":        frame,
+            "dot":          dot,
+            "status_lbl":   status_lbl,
+            "elapsed_lbl":  elapsed_lbl,
+            "prog":         prog,
+            "stop_btn":     stop_btn,
+            "img_label":    img_label,
+            "thumb_col":    thumb_col,
+            "placeholder":  placeholder,
+            "thumb_ts_lbl": thumb_ts_lbl,
+            "title_lbl":    title_lbl,
+            "creator_lbl":  creator_lbl,
+        }
+
+        orig = sess.on_update
+        def patched(s_id, event, data, _orig=orig):
+            _orig(s_id, event, data)
+            if event == "new_thumb":
+                self.after(0, lambda p=data, s=s_id: self._load_thumb(s, p))
+            elif event in ("status", "retry_countdown", "done"):
+                self.after(0, lambda s=s_id: self._update_card(
+                    s_id, LIVE_REGISTRY.get(s_id)))
+        sess.on_update = patched
+
+    def _load_thumb(self, sid, path):
+        if sid not in self._cards:
+            return
+        if not os.path.isfile(path):
+            return
+        try:
+            try:
+                from PIL import Image as PILImage, ImageTk
+                img  = PILImage.open(path)
+                tw, th = self.CARD_THUMB_W, self.CARD_THUMB_H
+                img.thumbnail((tw, th), PILImage.LANCZOS)
+                photo = ImageTk.PhotoImage(img)
+            except ImportError:
+                ppm_path = path + ".ppm"
+                subprocess.run(
+                    ["ffmpeg", "-y", "-i", path,
+                     "-vf", "scale={}:{}:force_original_aspect_ratio=decrease".format(
+                         self.CARD_THUMB_W, self.CARD_THUMB_H),
+                     ppm_path],
+                    capture_output=True, timeout=5,
+                )
+                if not os.path.isfile(ppm_path):
+                    return
+                photo = tk.PhotoImage(file=ppm_path)
+                try:
+                    os.remove(ppm_path)
+                except Exception:
+                    pass
+
+            c = self._cards[sid]
+            il = c["img_label"]
+            il.configure(image=photo)
+            il.image = photo
+            self._tk_images[sid] = photo
+
+            il.place(x=0, y=0,
+                     width=self.CARD_THUMB_W,
+                     height=self.CARD_THUMB_H)
+
+            ts = time.strftime("%H:%M:%S")
+            c["thumb_ts_lbl"].configure(text=ts)
+
+        except Exception:
+            pass
+
+    def _update_card(self, sid, sess):
+        if sess is None or sid not in self._cards:
+            return
+        c = self._cards[sid]
+
+        status_colors = {
+            "init":      COLORS["muted"],
+            "fetching":  COLORS["warning"],
+            "recording": COLORS["error"],
+            "retrying":  COLORS["warning"],
+            "stopped":   COLORS["muted"],
+            "done":      COLORS["success"],
+        }
+        status_labels = {
+            "init":      "⚙ Initialisation",
+            "fetching":  "🔍 Récupération flux",
+            "recording": "🔴 En cours",
+            "retrying":  "🔄 Retry…",
+            "stopped":   "⏹ Arrêté",
+            "done":      "✅ Terminé",
+        }
+        color = status_colors.get(sess.status, COLORS["muted"])
+        c["dot"].configure(text_color=color)
+        c["status_lbl"].configure(
+            text=status_labels.get(sess.status, sess.status),
+            text_color=color,
+        )
+
+        if sess.start_time:
+            elapsed = int(time.time() - sess.start_time)
+            h, rem  = divmod(elapsed, 3600)
+            m, s    = divmod(rem, 60)
+            c["elapsed_lbl"].configure(text="{:02d}:{:02d}:{:02d}".format(h, m, s))
+
+        if sess.status in ("done", "stopped"):
+            try:
+                c["prog"].stop()
+                c["prog"].configure(progress_color=COLORS["success"])
+                c["prog"].set(1.0)
+            except Exception:
+                pass
+            c["stop_btn"].configure(state="disabled", fg_color=COLORS["border"])
+
+            jd = sess.json_data or {}
+            title   = (jd.get("title") or sess.label or "—")[:80]
+            creator = jd.get("creator") or jd.get("uploader") or "—"
+            c["title_lbl"].configure(text=title)
+            c["creator_lbl"].configure(text="👤  {}".format(creator))
+
+        elif sess.status == "recording" and not sess.start_time:
+            try:
+                c["prog"].start()
+            except Exception:
+                pass
+
+    def _stop_session(self, sid):
+        with LIVE_REGISTRY_LOCK:
+            sess = LIVE_REGISTRY.get(sid)
+        if sess:
+            sess.stop()
+
+    def _remove_session(self, sid):
+        with LIVE_REGISTRY_LOCK:
+            sess = LIVE_REGISTRY.pop(sid, None)
+        if sess and sess.status not in ("done", "stopped"):
+            sess.stop()
+        self.refresh()
+
+    def _poll(self):
+        try:
+            with LIVE_REGISTRY_LOCK:
+                sessions = dict(LIVE_REGISTRY)
+            for sid, sess in sessions.items():
+                if sid in self._cards:
+                    self._update_card(sid, sess)
+                else:
+                    self._create_card(sid, sess)
+                    self._empty_lbl.pack_forget()
+        except Exception:
+            pass
+        self.after(1000, self._poll)
+
+
+# ─── Onglet : Régénérer Vignette & Sprite ────────────────────────────────────
+
+class RegenerateTab(ctk.CTkFrame):
+    CELL_W = 320
+    CELL_H = 180
+    COLS   = 6
+    ROWS   = 6
+
+    def __init__(self, master):
+        super().__init__(master, fg_color="transparent")
+        self._busy_photo  = False
+        self._busy_sprite = False
+        self._tk_prev_photo  = None
+        self._tk_prev_sprite = None
+        self._build()
+
+    def _build(self):
+        hdr = ctk.CTkFrame(self, fg_color=COLORS["panel"], corner_radius=12)
+        hdr.pack(fill="x", padx=20, pady=(20, 10))
+        ctk.CTkLabel(hdr, text="Regenerer Vignette & Sprite",
+                     font=FONTS["title"], text_color=COLORS["text"]).pack(anchor="w", padx=20, pady=14)
+        ctk.CTkLabel(hdr, text="Selectionnez une video, regenerez la vignette et le sprite 6x6.\nLes fichiers existants sont ecrases. Pillow requis pour timecodes.",
+                     font=FONTS["small"], text_color=COLORS["muted"],
+                     justify="left").pack(anchor="w", padx=20, pady=(0, 14))
+
+        self._picker = FilePicker(
+            self, label="FICHIER VIDEO",
+            filetypes=[("Video", "*.ts *.mp4 *.mkv *.avi *.mov *.flv *.wmv *.webm"), ("Tous", "*.*")],
+            accent=COLORS["accent2"],
+        )
+        self._picker.pack(fill="x", padx=20, pady=6)
+        self._picker._path.trace_add("write", self._on_file_selected)
+
+        out_card = ctk.CTkFrame(self, fg_color=COLORS["card"], corner_radius=10)
+        out_card.pack(fill="x", padx=20, pady=4)
+        out_row = ctk.CTkFrame(out_card, fg_color="transparent")
+        out_row.pack(fill="x", padx=14, pady=8)
+        ctk.CTkLabel(out_row, text="Dossier de sortie :",
+                     font=FONTS["body"], text_color=COLORS["muted"]).pack(side="left")
+        self._out_lbl = ctk.CTkLabel(out_row, text="(selectionnez une video)",
+                                      font=FONTS["body"], text_color=COLORS["accent2"])
+        self._out_lbl.pack(side="left", padx=10)
+
+        btn_row = ctk.CTkFrame(self, fg_color="transparent")
+        btn_row.pack(fill="x", padx=20, pady=10)
+        self._btn_photo = ctk.CTkButton(
+            btn_row, text="  Regenerer la vignette",
+            font=FONTS["heading"], height=48, corner_radius=12,
+            fg_color=COLORS["accent"], hover_color="#3A7AEE",
+            command=self._gen_photo,
+        )
+        self._btn_photo.pack(side="left", fill="x", expand=True, padx=(0, 6))
+        self._btn_sprite = ctk.CTkButton(
+            btn_row, text="  Regenerer le sprite 6x6",
+            font=FONTS["heading"], height=48, corner_radius=12,
+            fg_color=COLORS["accent2"], hover_color="#8B44EE",
+            command=self._gen_sprite,
+        )
+        self._btn_sprite.pack(side="left", fill="x", expand=True, padx=(6, 0))
+
+        self._btn_both = ctk.CTkButton(
+            self, text="  Regenerer LES DEUX (vignette + sprite)",
+            font=("Segoe UI", 14, "bold"), height=52, corner_radius=12,
+            fg_color=COLORS["accent3"], hover_color="#00B890", text_color="#0D0F14",
+            command=self._gen_both,
+        )
+        self._btn_both.pack(fill="x", padx=20, pady=(0, 10))
+
+        prog_card = ctk.CTkFrame(self, fg_color=COLORS["card"], corner_radius=10)
+        prog_card.pack(fill="x", padx=20, pady=4)
+        for label, attr_p, attr_l, color in [
+            ("Vignette", "_prog_photo",  "_lbl_photo",  COLORS["accent"]),
+            ("Sprite",   "_prog_sprite", "_lbl_sprite", COLORS["accent2"]),
+        ]:
+            r = ctk.CTkFrame(prog_card, fg_color="transparent")
+            r.pack(fill="x", padx=14, pady=6)
+            ctk.CTkLabel(r, text=label, font=FONTS["body"],
+                         text_color=COLORS["muted"], width=70).pack(side="left")
+            prog = ctk.CTkProgressBar(r, mode="determinate", progress_color=color, height=8)
+            prog.set(0)
+            prog.pack(side="left", fill="x", expand=True, padx=8)
+            lbl = ctk.CTkLabel(r, text="En attente", font=FONTS["small"],
+                                text_color=COLORS["muted"], width=200, anchor="w")
+            lbl.pack(side="left")
+            setattr(self, attr_p, prog)
+            setattr(self, attr_l, lbl)
+
+        prev_card = ctk.CTkFrame(self, fg_color=COLORS["card"], corner_radius=10)
+        prev_card.pack(fill="both", expand=True, padx=20, pady=(6, 20))
+        ctk.CTkLabel(prev_card, text="APERCU", font=FONTS["small"],
+                     text_color=COLORS["muted"]).pack(anchor="w", padx=14, pady=(10, 4))
+        cols_f = ctk.CTkFrame(prev_card, fg_color="transparent")
+        cols_f.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+
+        col_l = ctk.CTkFrame(cols_f, fg_color=COLORS["border"], corner_radius=8)
+        col_l.pack(side="left", fill="both", expand=True, padx=(0, 6))
+        ctk.CTkLabel(col_l, text="Vignette aleatoire",
+                     font=FONTS["small"], text_color=COLORS["muted"]).pack(pady=(8, 4))
+        self._prev_photo_lbl = tk.Label(col_l, bg="#2A2F42", bd=0)
+        self._prev_photo_lbl.pack(padx=8, pady=(0, 4), fill="both", expand=True)
+        self._prev_photo_path = ctk.CTkLabel(col_l, text="", font=FONTS["small"],
+                                              text_color=COLORS["muted"], wraplength=300)
+        self._prev_photo_path.pack(pady=(0, 8))
+
+        col_r = ctk.CTkFrame(cols_f, fg_color=COLORS["border"], corner_radius=8)
+        col_r.pack(side="left", fill="both", expand=True, padx=(6, 0))
+        ctk.CTkLabel(col_r, text="Sprite 6x6 (1920x1080)",
+                     font=FONTS["small"], text_color=COLORS["muted"]).pack(pady=(8, 4))
+        self._prev_sprite_lbl = tk.Label(col_r, bg="#2A2F42", bd=0)
+        self._prev_sprite_lbl.pack(padx=8, pady=(0, 4), fill="both", expand=True)
+        self._prev_sprite_path = ctk.CTkLabel(col_r, text="", font=FONTS["small"],
+                                               text_color=COLORS["muted"], wraplength=300)
+        self._prev_sprite_path.pack(pady=(0, 8))
+
+    def _on_file_selected(self, *args):
+        src = self._picker.path
+        if src and os.path.isfile(src):
+            out_dir = Path(src).parent / Path(src).stem
+            self._out_lbl.configure(text=str(out_dir))
+            for name, which in [("snapshot_random.jpg", "photo"), ("sprite_6x6.jpg", "sprite")]:
+                p = str(out_dir / name)
+                if os.path.isfile(p):
+                    self._show_preview(p, which)
+
+    def _get_duration(self, video_path):
+        try:
+            res = subprocess.run(
+                ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+                 "-of", "default=noprint_wrappers=1:nokey=1", video_path],
+                capture_output=True, text=True, timeout=10,
+            )
+            return max(2.0, float(res.stdout.strip()))
+        except Exception:
+            return 60.0
+
+    def _out_dir(self):
+        src = self._picker.path
+        if not src or not os.path.isfile(src):
+            return None
+        d = Path(src).parent / Path(src).stem
+        d.mkdir(parents=True, exist_ok=True)
+        return d
+
+    def _set_prog(self, which, value, msg, color=None):
+        getattr(self, "_prog_{}".format(which)).set(value)
+        getattr(self, "_lbl_{}".format(which)).configure(
+            text=msg, text_color=color or COLORS["muted"])
+
+    def _show_preview(self, path, which):
+        lbl  = self._prev_photo_lbl  if which == "photo"  else self._prev_sprite_lbl
+        plbl = self._prev_photo_path if which == "photo"  else self._prev_sprite_path
+        try:
+            from PIL import Image as _PI, ImageTk as _ITk
+            img = _PI.open(path)
+            img.thumbnail((420, 240), _PI.LANCZOS)
+            photo = _ITk.PhotoImage(img)
+            lbl.configure(image=photo)
+            lbl.image = photo
+            if which == "photo":
+                self._tk_prev_photo = photo
+            else:
+                self._tk_prev_sprite = photo
+        except ImportError:
+            lbl.configure(text="Pillow requis - pip install pillow")
+        except Exception as e:
+            lbl.configure(text="Erreur apercu: {}".format(e))
+        plbl.configure(text=os.path.basename(path))
+
+    def _gen_photo(self):
+        if self._busy_photo:
+            return
+        src = self._picker.path
+        if not src or not os.path.isfile(src):
+            messagebox.showerror("Erreur", "Selectionnez une video.")
+            return
+        out_dir = self._out_dir()
+        if not out_dir:
+            return
+        self._busy_photo = True
+        self._btn_photo.configure(state="disabled", text="  Generation...")
+        self._set_prog("photo", 0, "Demarrage...")
+
+        def worker():
+            try:
+                duration = self._get_duration(src)
+                margin   = min(2.0, duration * 0.05)
+                rand_t   = random.uniform(margin, duration - margin)
+                out_path = str(out_dir / "snapshot_random.jpg")
+                tc = "{:02d}:{:02d}:{:02d}".format(
+                    int(rand_t)//3600, (int(rand_t)%3600)//60, int(rand_t)%60)
+                self.after(0, lambda: self._set_prog(
+                    "photo", 0.3, "Extraction @ {}...".format(tc)))
+                ret = subprocess.run([
+                    "ffmpeg", "-y", "-ss", "{:.3f}".format(rand_t), "-i", src,
+                    "-frames:v", "1",
+                    "-vf", "scale=1280:720:force_original_aspect_ratio=decrease,"
+                           "pad=1280:720:(ow-iw)/2:(oh-ih)/2:black",
+                    "-q:v", "2", out_path,
+                ], capture_output=True, timeout=30)
+                if ret.returncode == 0 and os.path.isfile(out_path):
+                    sz = os.path.getsize(out_path) // 1024
+                    self.after(0, lambda: self._set_prog(
+                        "photo", 1.0,
+                        "OK  {} Ko  @{}".format(sz, tc),
+                        COLORS["success"]))
+                    self.after(0, lambda p=out_path: self._show_preview(p, "photo"))
+                else:
+                    self.after(0, lambda: self._set_prog(
+                        "photo", 0, "Echec ffmpeg", COLORS["error"]))
+            except Exception as e:
+                self.after(0, lambda err=e: self._set_prog(
+                    "photo", 0, "Erreur: {}".format(err), COLORS["error"]))
+            finally:
+                def done():
+                    self._busy_photo = False
+                    self._btn_photo.configure(state="normal", text="  Regenerer la vignette")
+                self.after(0, done)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _gen_sprite(self):
+        if self._busy_sprite:
+            return
+        src = self._picker.path
+        if not src or not os.path.isfile(src):
+            messagebox.showerror("Erreur", "Selectionnez une video.")
+            return
+        out_dir = self._out_dir()
+        if not out_dir:
+            return
+        self._busy_sprite = True
+        self._btn_sprite.configure(state="disabled", text="  Generation...")
+        self._set_prog("sprite", 0, "Demarrage...")
+
+        CW, CH, COLS, ROWS = self.CELL_W, self.CELL_H, self.COLS, self.ROWS
+        total = COLS * ROWS
+
+        def worker():
+            import tempfile as _tf, shutil as _sh
+            tmp_dir = None
+            try:
+                tmp_dir  = _tf.mkdtemp(prefix="sprite_regen_")
+                out_path = str(out_dir / "sprite_6x6.jpg")
+                duration = self._get_duration(src)
+                step     = duration / total
+                timestamps = [step * (i + 0.5) for i in range(total)]
+                frame_paths = []
+                last_good   = None
+
+                for i, ts in enumerate(timestamps):
+                    self.after(0, lambda p=i/total, idx=i: self._set_prog(
+                        "sprite", p, "Frame {}/{}...".format(idx + 1, total)))
+                    fp = os.path.join(tmp_dir, "f_{:02d}.jpg".format(i))
+                    ret = subprocess.run([
+                        "ffmpeg", "-y", "-ss", "{:.6f}".format(ts), "-i", src,
+                        "-frames:v", "1",
+                        "-vf", "scale={w}:{h}:force_original_aspect_ratio=decrease,"
+                               "pad={w}:{h}:(ow-iw)/2:(oh-ih)/2:color=black".format(w=CW, h=CH),
+                        "-q:v", "2", fp,
+                    ], capture_output=True, timeout=30)
+                    if ret.returncode == 0 and os.path.isfile(fp):
+                        last_good = fp
+                        frame_paths.append(fp)
+                    elif last_good:
+                        _sh.copy2(last_good, fp)
+                        frame_paths.append(fp)
+                    else:
+                        frame_paths.append(None)
+
+                self.after(0, lambda: self._set_prog("sprite", 0.95, "Assemblage..."))
+
+                try:
+                    from PIL import Image as _PI, ImageDraw as _PID
+                    sprite = _PI.new("RGB", (CW * COLS, CH * ROWS), (10, 10, 20))
+                    draw   = _PID.Draw(sprite)
+                    for idx, fp in enumerate(frame_paths):
+                        col = idx % COLS
+                        row = idx // COLS
+                        ts  = timestamps[idx]
+                        x0, y0 = col * CW, row * CH
+                        if fp and os.path.isfile(fp):
+                            try:
+                                cell = _PI.open(fp).resize((CW, CH), _PI.LANCZOS)
+                                sprite.paste(cell, (x0, y0))
+                            except Exception:
+                                pass
+                        tc = "{:02d}:{:02d}:{:02d}".format(
+                            int(ts//3600), int((ts%3600)//60), int(ts%60))
+                        tx, ty = x0 + 5, y0 + CH - 22
+                        draw.text((tx+1, ty+1), tc, fill=(0, 0, 0))
+                        draw.text((tx,   ty  ), tc, fill=(0, 255, 120))
+                    sprite.save(out_path, "JPEG", quality=88)
+                    method = "Pillow"
+                except ImportError:
+                    pattern = os.path.join(tmp_dir, "f_%02d.jpg")
+                    subprocess.run([
+                        "ffmpeg", "-y", "-i", pattern,
+                        "-frames:v", "1",
+                        "-vf", "tile={}x{}".format(COLS, ROWS),
+                        "-q:v", "2", out_path,
+                    ], capture_output=True)
+                    method = "ffmpeg (sans timecodes)"
+
+                if os.path.isfile(out_path):
+                    sz = os.path.getsize(out_path) // 1024
+                    self.after(0, lambda: self._set_prog(
+                        "sprite", 1.0,
+                        "OK  {} Ko  step={:.1f}s  {}".format(sz, step, method),
+                        COLORS["success"]))
+                    self.after(0, lambda p=out_path: self._show_preview(p, "sprite"))
+                else:
+                    self.after(0, lambda: self._set_prog(
+                        "sprite", 0, "Assemblage echoue", COLORS["error"]))
+            except Exception as e:
+                self.after(0, lambda err=e: self._set_prog(
+                    "sprite", 0, "Erreur: {}".format(err), COLORS["error"]))
+            finally:
+                if tmp_dir:
+                    import shutil as _sh2
+                    _sh2.rmtree(tmp_dir, ignore_errors=True)
+                def done():
+                    self._busy_sprite = False
+                    self._btn_sprite.configure(state="normal", text="  Regenerer le sprite 6x6")
+                self.after(0, done)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _gen_both(self):
+        src = self._picker.path
+        if not src or not os.path.isfile(src):
+            messagebox.showerror("Erreur", "Selectionnez une video.")
+            return
+        self._gen_photo()
+        self._gen_sprite()
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PUBLISH TAB — Publication Doodstream + API TikCapture
+# ═══════════════════════════════════════════════════════════════════════════════
+
+TIKCAPTURE_API = "https://tikcapture.live/segment_page/api/pub_model_video.php"
+
+
+def _day_folder() -> str:
+    """Retourne le dossier du jour au format JJ_MM_AAAA."""
+    return datetime.datetime.now().strftime("%d_%m_%Y")
+
+
+def _multipart_body(fields: dict, files: dict):
+    """
+    Construit un corps multipart/form-data.
+    fields : {name: value_str}
+    files  : {name: filepath_str}  — les fichiers sont lus depuis le disque.
+    Retourne (body_bytes, boundary_str).
+    """
+    boundary = "MPBoundary" + os.urandom(10).hex()
+    parts = []
+
+    for name, value in fields.items():
+        parts.append(
+            f"--{boundary}\r\n"
+            f'Content-Disposition: form-data; name="{name}"\r\n\r\n'
+            f"{value}\r\n"
+        )
+
+    for name, filepath in files.items():
+        if not filepath or not os.path.isfile(filepath):
+            continue
+        filename = Path(filepath).name
+        ext = Path(filepath).suffix.lower()
+        ctype = "video/mp4" if ext in (".mp4", ".ts", ".mkv") else "image/jpeg"
+        header = (
+            f"--{boundary}\r\n"
+            f'Content-Disposition: form-data; name="{name}"; filename="{filename}"\r\n'
+            f"Content-Type: {ctype}\r\n\r\n"
+        )
+        with open(filepath, "rb") as f:
+            data = f.read()
+        parts.append(header.encode() + data + b"\r\n")
+
+    body = b"".join(
+        (p.encode() if isinstance(p, str) else p) for p in parts
+    ) + f"--{boundary}--\r\n".encode()
+
+    return body, boundary
+
+
+def _find_profil_pic(rec_dir: Path):
+    """Retourne le nom de fichier de la photo de profil si elle existe."""
+    for ext in (".jpg", ".jpeg", ".png", ".webp"):
+        p = rec_dir / "profil_pic{}".format(ext)
+        if p.is_file():
+            return "profil_pic{}".format(ext)
+    return None
+
+
+class PublishTab(ctk.CTkFrame):
+    """
+    Onglet de publication :
+      1. Liste les dossiers d'enregistrements dans lives/
+      2. Pour chaque enregistrement : affiche vignette, sprite, démo
+      3. Bouton Publier :
+         a. Upload la vidéo principale sur Doodstream  → filecode + embed
+         b. Appel API TikCapture (pub_model_video.php) avec multipart :
+            - Fichiers : thumbnail, cover, sprite, demo
+            - Métadonnées : username, display_name, signature, title, description, etc.
+    """
+
+    def __init__(self, master):
+        super().__init__(master, fg_color="transparent")
+        self._busy      = False
+        self._sessions  = []   # liste des dicts de sessions détectées
+        self._api_key   = tk.StringVar(value="116859tc0vf080ijf3jk5x")
+        self._build()
+        self.after(300, self._scan_recordings)
+
+    # ─── Construction UI ──────────────────────────────────────────────────────
+
+    def _build(self):
+        # ── En-tête ──
+        hdr = ctk.CTkFrame(self, fg_color=COLORS["panel"], corner_radius=12)
+        hdr.pack(fill="x", padx=20, pady=(20, 10))
+
+        title_row = ctk.CTkFrame(hdr, fg_color="transparent")
+        title_row.pack(fill="x", padx=20, pady=14)
+        ctk.CTkLabel(title_row, text="🚀  Publier sur Doodstream",
+                     font=FONTS["title"], text_color=COLORS["accent3"]).pack(side="left")
+        if not DOOD_AVAILABLE:
+            badge = ctk.CTkFrame(title_row, fg_color=COLORS["error"], corner_radius=20)
+            badge.pack(side="left", padx=14)
+            ctk.CTkLabel(badge, text="doodstream_api.py introuvable",
+                         font=FONTS["small"], text_color="white").pack(padx=10, pady=4)
+
+        ctk.CTkLabel(
+            hdr,
+            text=(
+                "Scanne les enregistrements dans lives/  •  "
+                "Upload sur Doodstream  •  "
+                "Enregistre dans la BD via TikCapture API"
+            ),
+            font=FONTS["small"], text_color=COLORS["muted"],
+        ).pack(anchor="w", padx=20, pady=(0, 14))
+
+        # ── Clé API + dossier ──
+        cfg = ctk.CTkFrame(self, fg_color=COLORS["card"], corner_radius=10)
+        cfg.pack(fill="x", padx=20, pady=4)
+        cfg_row = ctk.CTkFrame(cfg, fg_color="transparent")
+        cfg_row.pack(fill="x", padx=14, pady=10)
+
+        # Clé Doodstream
+        c1 = ctk.CTkFrame(cfg_row, fg_color="transparent")
+        c1.pack(side="left", fill="x", expand=True, padx=(0, 8))
+        ctk.CTkLabel(c1, text="Clé API Doodstream", font=FONTS["small"],
+                     text_color=COLORS["muted"]).pack(anchor="w")
+        ctk.CTkEntry(c1, textvariable=self._api_key, font=FONTS["body"],
+                     fg_color=COLORS["border"], border_color=COLORS["border"],
+                     text_color=COLORS["text"]).pack(fill="x", pady=4)
+
+        # Dossier lives
+        c2 = ctk.CTkFrame(cfg_row, fg_color="transparent")
+        c2.pack(side="left", fill="x", expand=True)
+        ctk.CTkLabel(c2, text="Dossier lives/", font=FONTS["small"],
+                     text_color=COLORS["muted"]).pack(anchor="w")
+        dir_row = ctk.CTkFrame(c2, fg_color="transparent")
+        dir_row.pack(fill="x")
+        self._lives_dir = tk.StringVar(value=str(SCRIPT_DIR / "lives"))
+        ctk.CTkEntry(dir_row, textvariable=self._lives_dir, font=FONTS["small"],
+                     fg_color=COLORS["border"], border_color=COLORS["border"],
+                     text_color=COLORS["text"]).pack(side="left", fill="x", expand=True, padx=(0, 4))
+        ctk.CTkButton(dir_row, text="📁", width=36, height=30,
+                      fg_color=COLORS["border"], hover_color=COLORS["card"],
+                      command=self._pick_lives_dir).pack(side="right")
+
+        # ── Bouton scan ──
+        scan_row = ctk.CTkFrame(self, fg_color="transparent")
+        scan_row.pack(fill="x", padx=20, pady=6)
+        ctk.CTkButton(
+            scan_row, text="🔍  Scanner les enregistrements",
+            font=FONTS["heading"], height=44, corner_radius=12,
+            fg_color=COLORS["border"], hover_color=COLORS["card"],
+            command=self._scan_recordings,
+        ).pack(side="left", fill="x", expand=True, padx=(0, 8))
+        self._count_lbl = ctk.CTkLabel(
+            scan_row, text="", font=FONTS["body"], text_color=COLORS["muted"]
+        )
+        self._count_lbl.pack(side="left")
+
+        # ── Liste scrollable des enregistrements ──
+        ctk.CTkLabel(self, text="ENREGISTREMENTS DISPONIBLES",
+                     font=FONTS["small"], text_color=COLORS["muted"]).pack(anchor="w", padx=24)
+
+        self._scroll = ctk.CTkScrollableFrame(self, fg_color="transparent", corner_radius=0)
+        self._scroll.pack(fill="both", expand=True, padx=20, pady=(4, 0))
+
+        self._empty_lbl = ctk.CTkLabel(
+            self._scroll,
+            text="Aucun enregistrement trouvé.\nLancez d'abord un enregistrement dans 🔴 Live Recorder.",
+            font=FONTS["body"], text_color=COLORS["muted"], justify="center",
+        )
+        self._empty_lbl.pack(pady=40)
+
+        # ── Log global ──
+        ctk.CTkLabel(self, text="JOURNAL DE PUBLICATION",
+                     font=FONTS["small"], text_color=COLORS["muted"]).pack(anchor="w", padx=24, pady=(8, 0))
+        self._log = LogBox(self)
+        self._log.pack(fill="x", padx=20, pady=(4, 20), ipady=4)
+        self._log._text.configure(height=6)
+
+    # ─── Helpers ──────────────────────────────────────────────────────────────
+
+    def _pick_lives_dir(self):
+        d = filedialog.askdirectory()
+        if d:
+            self._lives_dir.set(d)
+
+    def _log_msg(self, msg):
+        self.after(0, lambda m=msg: self._log.append(m))
+
+    # ─── Scan des enregistrements ─────────────────────────────────────────────
+
+    def _scan_recordings(self):
+        """
+        Parcourt lives/ et cherche les sous-dossiers contenant :
+          - un fichier .ts (vidéo principale)
+          - snapshot_random.jpg (vignette)
+          - sprite_6x6.jpg (sprite)
+          - info.json (métadonnées yt-dlp)
+        """
+        lives_root = Path(self._lives_dir.get())
+        sessions   = []
+
+        if lives_root.is_dir():
+            for rec_dir in sorted(lives_root.iterdir(), reverse=True):
+                if not rec_dir.is_dir():
+                    continue
+
+                # Chercher le .ts
+                ts_files = list(rec_dir.glob("*.ts"))
+                if not ts_files:
+                    ts_files = list(rec_dir.glob("*.mp4"))
+                if not ts_files:
+                    continue
+                ts_file = ts_files[0]
+
+                # Métadonnées yt-dlp
+                info_json = rec_dir / "info.json"
+                info = {}
+                if info_json.is_file():
+                    try:
+                        import json as _json
+                        info = _json.loads(info_json.read_text(encoding="utf-8"))
+                    except Exception:
+                        pass
+
+                thumb  = rec_dir / "snapshot_random.jpg"
+                sprite = rec_dir / "sprite_6x6.jpg"
+
+                # Chercher une démo mp4 éventuelle
+                demo = None
+                for mp4 in rec_dir.glob("*.mp4"):
+                    demo = mp4
+                    break
+
+                sessions.append({
+                    "rec_dir":     rec_dir,
+                    "ts_file":     ts_file,
+                    "thumb":       thumb   if thumb.is_file()  else None,
+                    "sprite":      sprite  if sprite.is_file() else None,
+                    "demo":        demo,
+                    "info":        info,
+                    "title":       info.get("title", rec_dir.name),
+                    "uploader":    info.get("uploader", ""),
+                    "description": info.get("description", ""),
+                    "published":   False,
+                })
+
+        self._sessions = sessions
+        self._count_lbl.configure(
+            text="{} enregistrement(s) trouvé(s)".format(len(sessions))
+        )
+        self._rebuild_list()
+
+    def _rebuild_list(self):
+        """Reconstruit la liste des cartes dans le scroll."""
+        for widget in self._scroll.winfo_children():
+            widget.destroy()
+
+        if not self._sessions:
+            self._empty_lbl = ctk.CTkLabel(
+                self._scroll,
+                text="Aucun enregistrement trouvé.\nLancez d'abord un enregistrement dans 🔴 Live Recorder.",
+                font=FONTS["body"], text_color=COLORS["muted"], justify="center",
+            )
+            self._empty_lbl.pack(pady=40)
+            return
+
+        for idx, sess in enumerate(self._sessions):
+            self._create_rec_card(idx, sess)
+
+    def _create_rec_card(self, idx: int, sess: dict):
+        """Crée une carte pour un enregistrement."""
+        card = ctk.CTkFrame(
+            self._scroll, fg_color=COLORS["card"],
+            corner_radius=12, border_width=1, border_color=COLORS["border"],
+        )
+        card.pack(fill="x", pady=6, padx=4)
+
+        body = ctk.CTkFrame(card, fg_color="transparent")
+        body.pack(fill="x", padx=14, pady=12)
+
+        # ── Colonne gauche : miniature ──
+        thumb_frame = ctk.CTkFrame(body, fg_color=COLORS["border"],
+                                   corner_radius=8, width=120, height=90)
+        thumb_frame.pack(side="left", padx=(0, 14))
+        thumb_frame.pack_propagate(False)
+
+        if sess["thumb"]:
+            try:
+                from PIL import Image as _PI, ImageTk as _ITk
+                img = _PI.open(str(sess["thumb"]))
+                img.thumbnail((120, 90), _PI.LANCZOS)
+                photo = _ITk.PhotoImage(img)
+                lbl = tk.Label(thumb_frame, image=photo, bg="#2A2F42", bd=0)
+                lbl.image = photo
+                lbl.place(x=0, y=0, width=120, height=90)
+            except Exception:
+                ctk.CTkLabel(thumb_frame, text="🖼", font=("Segoe UI", 28),
+                             text_color=COLORS["muted"]).place(relx=.5, rely=.5, anchor="center")
+        else:
+            ctk.CTkLabel(thumb_frame, text="🎬\nPas de\nvignette",
+                         font=FONTS["small"], text_color=COLORS["muted"],
+                         justify="center").place(relx=.5, rely=.5, anchor="center")
+
+        # ── Colonne droite : infos + champs éditables ──
+        info_col = ctk.CTkFrame(body, fg_color="transparent")
+        info_col.pack(side="left", fill="both", expand=True)
+
+        # Titre et uploader
+        top_row = ctk.CTkFrame(info_col, fg_color="transparent")
+        top_row.pack(fill="x")
+        ctk.CTkLabel(top_row,
+                     text="👤 {}".format(sess["uploader"] or "Inconnu"),
+                     font=FONTS["heading"], text_color=COLORS["accent2"]).pack(side="left")
+
+        # Statut fichiers
+        files_row = ctk.CTkFrame(info_col, fg_color="transparent")
+        files_row.pack(fill="x", pady=(2, 4))
+        for label, exists in [
+            ("📹 TS",      sess["ts_file"] and sess["ts_file"].is_file()),
+            ("🖼 Vignette", bool(sess["thumb"])),
+            ("🔲 Sprite",   bool(sess["sprite"])),
+            ("🎞 Démo",     bool(sess["demo"])),
+        ]:
+            color = COLORS["success"] if exists else COLORS["error"]
+            ctk.CTkLabel(files_row, text=label, font=FONTS["small"],
+                         text_color=color).pack(side="left", padx=(0, 10))
+
+        # ── Champs éditables dans une grille ──
+        fields_frame = ctk.CTkFrame(info_col, fg_color="transparent")
+        fields_frame.pack(fill="x", pady=4)
+
+        # Ligne 1 : username | display_name
+        row1 = ctk.CTkFrame(fields_frame, fg_color="transparent")
+        row1.pack(fill="x", pady=2)
+
+        username_var = tk.StringVar(value=sess.get("uploader", ""))
+        display_var  = tk.StringVar(value=sess["info"].get("uploader", ""))
+        title_var    = tk.StringVar(value=sess["title"])
+        sig_var      = tk.StringVar(value=sess["info"].get("description", "")[:100])
+        desc_var     = tk.StringVar(value=sess.get("description", ""))
+
+        for col_frame, label, var in [
+            (row1, "Username (@)", username_var),
+            (row1, "Nom affiché",  display_var),
+        ]:
+            c = ctk.CTkFrame(col_frame, fg_color="transparent")
+            c.pack(side="left", fill="x", expand=True, padx=(0, 6))
+            ctk.CTkLabel(c, text=label, font=FONTS["small"],
+                         text_color=COLORS["muted"]).pack(anchor="w")
+            ctk.CTkEntry(c, textvariable=var, font=FONTS["small"],
+                         fg_color=COLORS["border"], border_color=COLORS["border"],
+                         text_color=COLORS["text"], height=30).pack(fill="x")
+
+        # Ligne 2 : titre | signature
+        row2 = ctk.CTkFrame(fields_frame, fg_color="transparent")
+        row2.pack(fill="x", pady=2)
+        for col_frame, label, var in [
+            (row2, "Titre du live",   title_var),
+            (row2, "Signature (bio)", sig_var),
+        ]:
+            c = ctk.CTkFrame(col_frame, fg_color="transparent")
+            c.pack(side="left", fill="x", expand=True, padx=(0, 6))
+            ctk.CTkLabel(c, text=label, font=FONTS["small"],
+                         text_color=COLORS["muted"]).pack(anchor="w")
+            ctk.CTkEntry(c, textvariable=var, font=FONTS["small"],
+                         fg_color=COLORS["border"], border_color=COLORS["border"],
+                         text_color=COLORS["text"], height=30).pack(fill="x")
+
+        # Sélecteur de démo manuelle
+        demo_var = tk.StringVar(value=str(sess["demo"]) if sess["demo"] else "")
+        demo_row = ctk.CTkFrame(fields_frame, fg_color="transparent")
+        demo_row.pack(fill="x", pady=2)
+        ctk.CTkLabel(demo_row, text="Fichier démo (mp4) :",
+                     font=FONTS["small"], text_color=COLORS["muted"]).pack(side="left")
+        ctk.CTkEntry(demo_row, textvariable=demo_var, font=FONTS["small"],
+                     fg_color=COLORS["border"], border_color=COLORS["border"],
+                     text_color=COLORS["text"], height=28,
+                     width=300).pack(side="left", padx=6)
+        ctk.CTkButton(
+            demo_row, text="📁", width=30, height=28,
+            fg_color=COLORS["border"], hover_color=COLORS["card"],
+            command=lambda v=demo_var: v.set(
+                filedialog.askopenfilename(
+                    filetypes=[("Vidéo", "*.mp4 *.ts *.mkv"), ("Tous", "*.*")]
+                ) or v.get()
+            ),
+        ).pack(side="left")
+
+        # ── Barre de progression + statut de cette carte ──
+        prog_frame = ctk.CTkFrame(info_col, fg_color="transparent")
+        prog_frame.pack(fill="x", pady=(4, 0))
+        prog = ctk.CTkProgressBar(prog_frame, mode="determinate",
+                                   progress_color=COLORS["accent3"], height=6)
+        prog.set(0)
+        prog.pack(side="left", fill="x", expand=True, padx=(0, 8))
+        status_lbl = ctk.CTkLabel(prog_frame, text="En attente",
+                                   font=FONTS["small"], text_color=COLORS["muted"],
+                                   width=180, anchor="w")
+        status_lbl.pack(side="left")
+
+        # ── Bouton Publier ──
+        pub_btn = ctk.CTkButton(
+            card,
+            text="🚀  Publier",
+            font=FONTS["heading"], height=40, corner_radius=10,
+            fg_color=COLORS["accent3"], hover_color="#00B890", text_color="#0D0F14",
+            command=lambda i=idx, uv=username_var, dv=display_var, tv=title_var,
+                           sv=sig_var, dscv=desc_var, demv=demo_var,
+                           p=prog, sl=status_lbl, btn_ref=None: self._publish(
+                i, uv, dv, tv, sv, dscv, demv, p, sl
+            ),
+        )
+        pub_btn.pack(fill="x", padx=14, pady=(0, 12))
+
+    # ─── Pipeline de publication ──────────────────────────────────────────────
+
+    def _publish(self, idx, username_var, display_var, title_var,
+                 sig_var, desc_var, demo_var,
+                 prog, status_lbl):
+        """Lance le pipeline de publication dans un thread."""
+        if self._busy:
+            messagebox.showwarning("Occupation", "Une publication est déjà en cours.")
+            return
+
+        sess = self._sessions[idx]
+
+        username     = username_var.get().strip().lstrip("@")
+        display_name = display_var.get().strip()
+        title        = title_var.get().strip()
+        signature    = sig_var.get().strip()
+        description  = desc_var.get().strip()
+        demo_path    = demo_var.get().strip() or None
+        api_key      = self._api_key.get().strip()
+
+        if not username:
+            messagebox.showerror("Erreur", "Le champ Username est obligatoire.")
+            return
+        if not api_key:
+            messagebox.showerror("Erreur", "La clé API Doodstream est vide.")
+            return
+
+        self._busy = True
+
+        def _set_status(msg, p_val=None):
+            self.after(0, lambda m=msg: status_lbl.configure(text=m))
+            if p_val is not None:
+                self.after(0, lambda v=p_val: prog.set(v))
+            self._log_msg(msg)
+
+        def worker():
+            try:
+                # ── Étape 1 : Cover via yt-dlp ───────────────────────────────
+                _set_status("1/4 Récupération cover TikTok…", 0.05)
+                cover_path = self._fetch_cover(sess, username)
+
+                # ── Étape 2 : Conversion si besoin + Upload Doodstream ───────
+                _set_status("2/4 Conv. + Upload Doodstream…", 0.15)
+                dood_code, dood_embed = self._upload_doodstream(
+                    sess, api_key, title,
+                    lambda sent, total: self.after(0, lambda s=sent, t=total:
+                        prog.set(0.15 + 0.55 * (s / t if t else 0)))
+                )
+
+                # ── Étape 3 : Génération démo 15s ────────────────────────────
+                _set_status("3/4 Génération vidéo démo 15s…", 0.70)
+
+                demo_generated = None
+                try:
+                    demo_out = sess["rec_dir"] / "demo_15s.mp4"
+                    dur = self._get_duration(str(sess["ts_file"]))
+                    # Prendre un extrait au 1/4 de la vidéo
+                    start = max(0, int(dur * 0.25))
+                    cmd_demo = [
+                        "ffmpeg", "-y",
+                        "-ss", str(start),
+                        "-i", str(sess["ts_file"]),
+                        "-t", "15",
+                        "-c:v", "libx264", "-crf", "23", "-preset", "fast",
+                        "-c:a", "aac",
+                        "-movflags", "+faststart",
+                        str(demo_out),
+                    ]
+                    ret_demo = subprocess.run(cmd_demo, capture_output=True, timeout=120)
+                    if ret_demo.returncode == 0 and demo_out.is_file():
+                        demo_generated = demo_out
+                        self._log_msg("  ✅ Démo générée : {}".format(demo_out.name))
+                    else:
+                        self._log_msg("  ⚠ Démo échouée")
+                except Exception as e:
+                    self._log_msg("  ⚠ Démo erreur : {}".format(e))
+
+                # ── Étape 4 : Sauvegarde JSON local ──────────────────────────
+                _set_status("4/4 Sauvegarde JSON…", 0.85)
+
+                import json as _json
+
+                rec_dir = sess["rec_dir"]
+
+                def _rel(abs_path):
+                    """Retourne le chemin relatif par rapport au rec_dir."""
+                    if not abs_path:
+                        return None
+                    try:
+                        return Path(abs_path).relative_to(rec_dir).as_posix()
+                    except ValueError:
+                        return Path(abs_path).name
+
+                # ── Suppression du sous-dossier doublon ──────────────────────
+                # Ex: rec_dir = lives/doaa.715_xxx/
+                #     doublon  = lives/doaa.715_xxx/doaa.715_xxx/  ← supprimé
+                try:
+                    duplicate_dir = rec_dir / rec_dir.name
+                    if duplicate_dir.is_dir():
+                        shutil.rmtree(str(duplicate_dir))
+                        self._log_msg("  🗑 Dossier doublon supprimé : {}".format(duplicate_dir.name))
+                except Exception as e:
+                    self._log_msg("  ⚠ Suppression doublon : {}".format(e))
+
+                published_data = {
+                    "published_at":     datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "day_folder":       _day_folder(),
+                    "username":         username,
+                    "display_name":     display_name,
+                    "signature":        signature,
+                    "title":            title,
+                    "description":      description,
+                    "duration":         self._get_duration(str(sess["ts_file"])),
+                    "recorded_at":      sess["info"].get("release_timestamp", ""),
+                    "doodstream_code":  dood_code  or "",
+                    "doodstream_embed": dood_embed or "",
+                    "thumbnail":        _rel(sess["thumb"]),
+                    "cover":            _rel(cover_path),
+                    "profil_pic":       _find_profil_pic(sess["rec_dir"]),
+                    "sprite":           _rel(sess["sprite"]),
+                    "demo":             _rel(demo_generated or demo_path),
+                    "transcript_txt":   "transcript.txt",
+                    "transcript_srt":   "transcript.srt",
+                    "transcript_json":  "transcript.json",
+                    "source_ts":        _rel(sess["ts_file"]),
+                    "yt_dlp_info": {
+                        "webpage_url":  sess["info"].get("webpage_url",  ""),
+                        "uploader":     sess["info"].get("uploader",     ""),
+                        "uploader_id":  sess["info"].get("uploader_id",  ""),
+                        "uploader_url": sess["info"].get("uploader_url", ""),
+                        "view_count":   sess["info"].get("view_count",   0),
+                        "like_count":   sess["info"].get("like_count",   0),
+                    },
+                }
+
+                json_out = rec_dir / "published.json"
+                try:
+                    json_out.write_text(
+                        _json.dumps(published_data, ensure_ascii=False, indent=2),
+                        encoding="utf-8"
+                    )
+                    _set_status("✅ Publié !", 1.0)
+                    self.after(0, lambda: prog.configure(progress_color=COLORS["success"]))
+                    sess["published"] = True
+                    self._log_msg("  📄 Fichier : {}".format(json_out.name))
+                    self._log_msg("  🔗 Embed   : {}".format(dood_embed))
+                except Exception as e:
+                    _set_status("❌ Erreur JSON : {}".format(e), 1.0)
+                    self.after(0, lambda: prog.configure(progress_color=COLORS["error"]))
+
+            except Exception as e:
+                _set_status("❌ Erreur : {}".format(e), 1.0)
+                self.after(0, lambda: prog.configure(progress_color=COLORS["error"]))
+            finally:
+                self._busy = False
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    # ─── Sous-méthodes pipeline ───────────────────────────────────────────────
+
+    def _fetch_cover(self, sess: dict, username: str):
+        """
+        Essaie de récupérer la photo de couverture TikTok via yt-dlp.
+        Retourne le chemin local du fichier téléchargé, ou None.
+        """
+        url = sess["info"].get("webpage_url") or sess["info"].get("original_url") or ""
+        if not url:
+            # Construire l'URL du profil à partir du username
+            url = "https://www.tiktok.com/@{}".format(username)
+
+        tmp_dir = tempfile.mkdtemp(prefix="cover_")
+        out_tpl = os.path.join(tmp_dir, "cover")
+        try:
+            ret = subprocess.run(
+                ["yt-dlp", "--write-thumbnail", "--skip-download",
+                 "-o", out_tpl, url],
+                capture_output=True, text=True, timeout=30,
+            )
+            # Chercher le fichier téléchargé
+            for f in Path(tmp_dir).iterdir():
+                if f.is_file() and f.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp"):
+                    # Copier dans le dossier de l'enregistrement pour réutilisation
+                    dest = sess["rec_dir"] / ("cover" + f.suffix)
+                    shutil.copy2(str(f), str(dest))
+                    self._log_msg("  Cover récupérée : {}".format(dest))
+                    return str(dest)
+        except Exception as e:
+            self._log_msg("  ⚠ Cover non récupérée : {}".format(e))
+        finally:
+            shutil.rmtree(tmp_dir, ignore_errors=True)
+        return None
+
+    def _upload_doodstream(self, sess, api_key, title, on_progress=None):
+        """
+        Upload la vidéo sur Doodstream.
+        Si le fichier source n'est pas MP4, il est converti automatiquement
+        via FFmpeg dans un fichier temporaire avant l'upload.
+        Retourne (filecode, embed_url).
+        """
+        if not DOOD_AVAILABLE:
+            self._log_msg("  ⚠ doodstream_api.py non disponible — upload ignoré")
+            return "", ""
+
+        src_path   = Path(str(sess["ts_file"]))
+        upload_path = str(src_path)
+        tmp_mp4    = None   # fichier converti à supprimer après upload
+
+        # ── Conversion si pas MP4 ──────────────────────────────────────────
+        if src_path.suffix.lower() != ".mp4":
+            self._log_msg("  🔄 Source non-MP4 ({}) → conversion en MP4 avant upload…".format(
+                src_path.suffix))
+            tmp_dir  = tempfile.mkdtemp(prefix="dood_conv_")
+            tmp_mp4  = os.path.join(tmp_dir, src_path.stem + "_dood.mp4")
+
+            cmd = [
+                "ffmpeg", "-y",
+                "-i", str(src_path),
+                "-c:v", "copy",
+                "-c:a", "aac",
+                "-movflags", "+faststart",
+                tmp_mp4,
+            ]
+            self._log_msg("  ▶ {}".format(" ".join(cmd)))
+            ret = subprocess.run(cmd, capture_output=True, text=True,
+                                 encoding="utf-8", errors="replace")
+            if ret.returncode != 0 or not os.path.isfile(tmp_mp4):
+                self._log_msg("  ❌ Conversion échouée :\n{}".format(ret.stderr[-300:]))
+                if tmp_mp4:
+                    shutil.rmtree(os.path.dirname(tmp_mp4), ignore_errors=True)
+                return "", ""
+
+            size_mb = os.path.getsize(tmp_mp4) / (1024 * 1024)
+            self._log_msg("  ✅ Conversion OK → {} ({:.1f} Mo)".format(
+                os.path.basename(tmp_mp4), size_mb))
+            upload_path = tmp_mp4
+        else:
+            self._log_msg("  ✅ Source déjà MP4, upload direct")
+
+        # ── Upload ────────────────────────────────────────────────────────
+        try:
+            api = _get_dood_api(api_key)
+            self._log_msg("  📤 Upload Doodstream : {}".format(os.path.basename(upload_path)))
+
+            result = api.upload_file(upload_path, title=title, on_progress=on_progress)
+            self._log_msg("  Réponse Doodstream : {}".format(result))
+
+            if result.get("status") == 200:
+                try:
+                    file_info = result["result"][0]
+                    code  = file_info.get("filecode", "")
+                    embed = "https://dood.li/e/{}".format(code)
+                    self._log_msg("  ✅ Doodstream filecode : {}".format(code))
+                    return code, embed
+                except (KeyError, IndexError, TypeError) as e:
+                    self._log_msg("  ⚠ Parsing réponse Doodstream : {}".format(e))
+            else:
+                self._log_msg("  ❌ Doodstream erreur : {}".format(result.get("msg", "")))
+
+        finally:
+            # Supprimer le MP4 temporaire dans tous les cas
+            if tmp_mp4 and os.path.isfile(tmp_mp4):
+                try:
+                    shutil.rmtree(os.path.dirname(tmp_mp4), ignore_errors=True)
+                    self._log_msg("  🗑 Fichier MP4 temporaire supprimé")
+                except Exception:
+                    pass
+
+        return "", ""
+
+    def _call_tikcapture(self, fields: dict, files: dict) -> dict:
+        """Envoie un POST multipart à l'API TikCapture."""
+        import json as _json
+        body, boundary = _multipart_body(fields, files)
+        req = urllib.request.Request(
+            TIKCAPTURE_API, data=body, method="POST"
+        )
+        req.add_header("Content-Type", f"multipart/form-data; boundary={boundary}")
+        req.add_header("Content-Length", str(len(body)))
+        req.add_header("User-Agent", "MediaForge/1.0")
+        try:
+            with urllib.request.urlopen(req, timeout=300) as resp:
+                raw = resp.read().decode("utf-8")
+                self._log_msg("  API TikCapture réponse : {}".format(raw[:200]))
+                return _json.loads(raw)
+        except urllib.error.HTTPError as e:
+            try:
+                body_err = e.read().decode("utf-8")
+            except Exception:
+                body_err = str(e)
+            self._log_msg("  ❌ HTTP {} : {}".format(e.code, body_err[:200]))
+            return {"status": e.code, "msg": body_err}
+        except Exception as e:
+            self._log_msg("  ❌ Réseau : {}".format(e))
+            return {"status": 0, "msg": str(e)}
+
+    def _get_duration(self, video_path: str) -> int:
+        """Retourne la durée en secondes via ffprobe, ou 0."""
+        try:
+            import json as _json
+            res = subprocess.run(
+                ["ffprobe", "-v", "quiet", "-print_format", "json",
+                 "-show_format", video_path],
+                capture_output=True, text=True, timeout=15,
+            )
+            data = _json.loads(res.stdout)
+            return int(float(data.get("format", {}).get("duration", 0)))
+        except Exception:
+            return 0
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TRANSCRIPT TAB — Extraction de transcript via Whisper
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TranscriptTab(ctk.CTkFrame):
+    WHISPER_MODELS = ["tiny", "base", "small", "medium", "large", "large-v2", "large-v3"]
+
+    def __init__(self, master):
+        super().__init__(master, fg_color="transparent")
+        self._busy = False
+        self._build()
+
+    def _build(self):
+        # ── En-tête ──
+        hdr = ctk.CTkFrame(self, fg_color=COLORS["panel"], corner_radius=12)
+        hdr.pack(fill="x", padx=20, pady=(20, 10))
+        ctk.CTkLabel(hdr, text="🎙  Extraction Transcript",
+                     font=FONTS["title"], text_color=COLORS["text"]).pack(anchor="w", padx=20, pady=14)
+        ctk.CTkLabel(
+            hdr,
+            text=(
+                "Extrait le transcript audio d'une vidéo via Whisper (OpenAI).\n"
+                "Résultat sauvegardé dans le dossier de la vidéo : transcript.txt / .srt / .json\n"
+                "Prérequis : pip install openai-whisper  •  ffmpeg dans PATH"
+            ),
+            font=FONTS["small"], text_color=COLORS["muted"], justify="left",
+        ).pack(anchor="w", padx=20, pady=(0, 14))
+
+        # ── Sélecteur de fichier ──
+        self._picker = FilePicker(
+            self, label="FICHIER VIDÉO / AUDIO",
+            filetypes=[
+                ("Vidéo / Audio", "*.ts *.mp4 *.mkv *.avi *.mov *.flv *.wmv *.webm *.mp3 *.wav *.m4a *.aac"),
+                ("Tous", "*.*"),
+            ],
+            accent=COLORS["accent2"],
+        )
+        self._picker.pack(fill="x", padx=20, pady=6)
+
+        # ── Options ──
+        opts = ctk.CTkFrame(self, fg_color=COLORS["card"], corner_radius=10)
+        opts.pack(fill="x", padx=20, pady=6)
+        ctk.CTkLabel(opts, text="OPTIONS WHISPER", font=FONTS["small"],
+                     text_color=COLORS["muted"]).pack(anchor="w", padx=14, pady=(10, 4))
+
+        row = ctk.CTkFrame(opts, fg_color="transparent")
+        row.pack(fill="x", padx=10, pady=(0, 12))
+
+        # Modèle
+        c1 = ctk.CTkFrame(row, fg_color="transparent")
+        c1.pack(side="left", fill="x", expand=True, padx=4)
+        ctk.CTkLabel(c1, text="Modèle", font=FONTS["small"],
+                     text_color=COLORS["muted"]).pack(anchor="w")
+        ctk.CTkLabel(c1,
+                     text="tiny=rapide/imprécis  →  large-v3=lent/précis",
+                     font=("Segoe UI", 9), text_color=COLORS["muted"]).pack(anchor="w")
+        self._model_var = tk.StringVar(value="small")
+        model_menu = ctk.CTkOptionMenu(
+            c1, values=self.WHISPER_MODELS,
+            variable=self._model_var,
+            font=FONTS["body"], fg_color=COLORS["border"],
+            button_color=COLORS["accent2"],
+            dropdown_fg_color=COLORS["card"],
+        )
+        model_menu.pack(fill="x", pady=4)
+
+        # Langue
+        c2 = ctk.CTkFrame(row, fg_color="transparent")
+        c2.pack(side="left", fill="x", expand=True, padx=4)
+        ctk.CTkLabel(c2, text="Langue (optionnel)", font=FONTS["small"],
+                     text_color=COLORS["muted"]).pack(anchor="w")
+        ctk.CTkLabel(c2, text="ex: fr, en, ar — vide = détection auto",
+                     font=("Segoe UI", 9), text_color=COLORS["muted"]).pack(anchor="w")
+        self._lang_var = tk.StringVar(value="")
+        ctk.CTkEntry(c2, textvariable=self._lang_var, font=FONTS["body"],
+                     fg_color=COLORS["border"], border_color=COLORS["border"],
+                     text_color=COLORS["text"],
+                     placeholder_text="auto").pack(fill="x", pady=4)
+
+        # Formats de sortie
+        c3 = ctk.CTkFrame(row, fg_color="transparent")
+        c3.pack(side="left", fill="x", expand=True, padx=4)
+        ctk.CTkLabel(c3, text="Formats de sortie", font=FONTS["small"],
+                     text_color=COLORS["muted"]).pack(anchor="w")
+        ctk.CTkLabel(c3, text=" ", font=("Segoe UI", 9),
+                     text_color=COLORS["muted"]).pack(anchor="w")
+        fmt_row = ctk.CTkFrame(c3, fg_color="transparent")
+        fmt_row.pack(fill="x", pady=4)
+        self._fmt_txt  = tk.BooleanVar(value=True)
+        self._fmt_srt  = tk.BooleanVar(value=True)
+        self._fmt_json = tk.BooleanVar(value=False)
+        for label, var in [("TXT", self._fmt_txt), ("SRT", self._fmt_srt), ("JSON", self._fmt_json)]:
+            ctk.CTkCheckBox(
+                fmt_row, text=label, variable=var,
+                font=FONTS["body"], text_color=COLORS["text"],
+                fg_color=COLORS["accent2"], hover_color=COLORS["accent"],
+                checkmark_color="white",
+            ).pack(side="left", padx=(0, 12))
+
+        # Dossier de sortie
+        c4 = ctk.CTkFrame(row, fg_color="transparent")
+        c4.pack(side="left", fill="x", expand=True, padx=4)
+        ctk.CTkLabel(c4, text="Dossier de sortie", font=FONTS["small"],
+                     text_color=COLORS["muted"]).pack(anchor="w")
+        ctk.CTkLabel(c4, text="vide = dossier de la vidéo",
+                     font=("Segoe UI", 9), text_color=COLORS["muted"]).pack(anchor="w")
+        out_row = ctk.CTkFrame(c4, fg_color="transparent")
+        out_row.pack(fill="x", pady=4)
+        self._out_var = tk.StringVar(value="")
+        ctk.CTkEntry(out_row, textvariable=self._out_var, font=FONTS["small"],
+                     fg_color=COLORS["border"], border_color=COLORS["border"],
+                     text_color=COLORS["text"],
+                     placeholder_text="auto").pack(side="left", fill="x", expand=True, padx=(0, 4))
+        ctk.CTkButton(out_row, text="📁", width=36, height=30,
+                      fg_color=COLORS["border"], hover_color=COLORS["card"],
+                      command=self._pick_out_dir).pack(side="right")
+
+        # ── Bouton lancer ──
+        self._btn = ctk.CTkButton(
+            self, text="  🎙  Lancer la transcription",
+            font=("Segoe UI", 14, "bold"), height=52, corner_radius=12,
+            fg_color=COLORS["accent2"], hover_color="#8B44EE",
+            command=self._run,
+        )
+        self._btn.pack(fill="x", padx=20, pady=10)
+
+        # ── Barre de progression ──
+        prog_card = ctk.CTkFrame(self, fg_color=COLORS["card"], corner_radius=10)
+        prog_card.pack(fill="x", padx=20, pady=(0, 6))
+        prog_row = ctk.CTkFrame(prog_card, fg_color="transparent")
+        prog_row.pack(fill="x", padx=14, pady=8)
+        self._prog = ctk.CTkProgressBar(prog_row, mode="indeterminate",
+                                         progress_color=COLORS["accent2"], height=8)
+        self._prog.pack(side="left", fill="x", expand=True, padx=(0, 10))
+        self._prog_lbl = ctk.CTkLabel(prog_row, text="En attente",
+                                       font=FONTS["small"], text_color=COLORS["muted"],
+                                       width=220, anchor="w")
+        self._prog_lbl.pack(side="left")
+
+        # ── Aperçu du transcript ──
+        prev_card = ctk.CTkFrame(self, fg_color=COLORS["card"], corner_radius=10)
+        prev_card.pack(fill="x", padx=20, pady=(0, 6))
+        ctk.CTkLabel(prev_card, text="APERÇU TRANSCRIPT",
+                     font=FONTS["small"], text_color=COLORS["muted"]).pack(anchor="w", padx=14, pady=(8, 2))
+        self._preview = ctk.CTkTextbox(
+            prev_card, font=FONTS["mono"], height=120,
+            fg_color=COLORS["border"], text_color=COLORS["text"],
+            wrap="word", activate_scrollbars=True,
+        )
+        self._preview.pack(fill="x", padx=10, pady=(0, 10))
+        self._preview.configure(state="disabled")
+
+        # ── Log ──
+        ctk.CTkLabel(self, text="JOURNAL", font=FONTS["small"],
+                     text_color=COLORS["muted"]).pack(anchor="w", padx=24)
+        self._log = LogBox(self)
+        self._log.pack(fill="both", expand=True, padx=20, pady=(4, 20))
+
+    def _pick_out_dir(self):
+        d = filedialog.askdirectory()
+        if d:
+            self._out_var.set(d)
+
+    def _set_status(self, msg, color=None):
+        self._prog_lbl.configure(text=msg, text_color=color or COLORS["muted"])
+        self._log.append(msg)
+
+    def _set_preview(self, text):
+        self._preview.configure(state="normal")
+        self._preview.delete("1.0", "end")
+        self._preview.insert("1.0", text[:3000])
+        self._preview.configure(state="disabled")
+
+    def _run(self):
+        if self._busy:
+            return
+
+        src = self._picker.path
+        if not src or not os.path.isfile(src):
+            messagebox.showerror("Erreur", "Veuillez sélectionner un fichier vidéo ou audio.")
+            return
+
+        model    = self._model_var.get()
+        lang     = self._lang_var.get().strip() or None
+        fmt_txt  = self._fmt_txt.get()
+        fmt_srt  = self._fmt_srt.get()
+        fmt_json = self._fmt_json.get()
+
+        if not fmt_txt and not fmt_srt and not fmt_json:
+            messagebox.showerror("Erreur", "Cochez au moins un format de sortie.")
+            return
+
+        # Dossier de sortie
+        out_dir_str = self._out_var.get().strip()
+        out_dir = Path(out_dir_str) if out_dir_str else Path(src).parent
+
+        self._busy = True
+        self._btn.configure(state="disabled", text="  Transcription en cours…")
+        self._prog.start()
+        self._log.clear()
+        self._set_status("Chargement modèle Whisper '{}'…".format(model))
+
+        def worker():
+            try:
+                import whisper as _whisper
+            except ImportError:
+                self.after(0, lambda: self._finish(False,
+                    "❌ Whisper non installé.\nLancez : pip install openai-whisper"))
+                return
+
+            try:
+                self.after(0, lambda: self._set_status(
+                    "Chargement modèle '{}'…".format(model)))
+                model_obj = _whisper.load_model(model)
+
+                self.after(0, lambda: self._set_status(
+                    "Transcription en cours (peut prendre plusieurs minutes)…"))
+
+                options = {}
+                if lang:
+                    options["language"] = lang
+
+                result = model_obj.transcribe(src, **options)
+
+                detected_lang = result.get("language", "?")
+                segments      = result.get("segments", [])
+                full_text     = result.get("text", "").strip()
+
+                self.after(0, lambda t=full_text: self._set_preview(t))
+                self.after(0, lambda: self._set_status(
+                    "Langue détectée : {}  |  {} segments".format(
+                        detected_lang, len(segments))))
+
+                stem = Path(src).stem
+                saved = []
+
+                # ── TXT ──
+                if fmt_txt:
+                    txt_lines = []
+                    for seg in segments:
+                        t_start = seg["start"]
+                        t_end   = seg["end"]
+                        text    = seg["text"].strip()
+                        tc_start = _fmt_srt_time(t_start).replace(",", ".")
+                        tc_end   = _fmt_srt_time(t_end).replace(",", ".")
+                        txt_lines.append("[{}  →  {}]  {}".format(
+                            tc_start, tc_end, text))
+                    txt_path = out_dir / "transcript.txt"
+                    txt_path.write_text(
+                        "\n".join(txt_lines), encoding="utf-8")
+                    saved.append(str(txt_path))
+
+                # ── SRT ──
+                if fmt_srt:
+                    srt_lines = []
+                    for i, seg in enumerate(segments, 1):
+                        t_start = seg["start"]
+                        t_end   = seg["end"]
+                        text    = seg["text"].strip()
+                        srt_lines.append("{}\n{} --> {}\n{}\n".format(
+                            i,
+                            _fmt_srt_time(t_start),
+                            _fmt_srt_time(t_end),
+                            text,
+                        ))
+                    srt_path = out_dir / "transcript.srt"
+                    srt_path.write_text("\n".join(srt_lines), encoding="utf-8")
+                    saved.append(str(srt_path))
+
+                # ── JSON ──
+                if fmt_json:
+                    import json as _json
+                    json_path = out_dir / "transcript.json"
+                    json_path.write_text(
+                        _json.dumps(result, ensure_ascii=False, indent=2),
+                        encoding="utf-8"
+                    )
+                    saved.append(str(json_path))
+
+                msg = "✅ Transcription terminée !\n" + "\n".join(
+                    "  📄 {}".format(p) for p in saved)
+                self.after(0, lambda m=msg: self._finish(True, m))
+
+            except Exception as e:
+                self.after(0, lambda err=e: self._finish(
+                    False, "❌ Erreur : {}".format(err)))
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _finish(self, ok, msg):
+        self._prog.stop()
+        self._prog.set(1.0 if ok else 0.0)
+        self._prog_lbl.configure(
+            text="✅ Terminé" if ok else "❌ Échec",
+            text_color=COLORS["success"] if ok else COLORS["error"],
+        )
+        self._log.append(msg)
+        self._busy = False
+        self._btn.configure(state="normal", text="  🎙  Lancer la transcription")
+
+
+def _fmt_srt_time(seconds: float) -> str:
+    """Convertit des secondes en format SRT : HH:MM:SS,mmm"""
+    ms  = int((seconds % 1) * 1000)
+    s   = int(seconds)
+    h   = s // 3600
+    m   = (s % 3600) // 60
+    s   = s % 60
+    return "{:02d}:{:02d}:{:02d},{:03d}".format(h, m, s, ms)
+
+
+# ─── Fenêtre principale ───────────────────────────────────────────────────────
+
+class MediaForge(ctk.CTk):
+    def __init__(self):
+        super().__init__()
+        self.title("MediaForge")
+        self.geometry("980x820")
+        self.minsize(820, 660)
+        self.configure(fg_color=COLORS["bg"])
+        self._build_titlebar()
+        self._build_tabs()
+
+    def _build_titlebar(self):
+        bar = ctk.CTkFrame(self, fg_color=COLORS["panel"], height=60, corner_radius=0)
+        bar.pack(fill="x")
+        bar.pack_propagate(False)
+
+        lf = ctk.CTkFrame(bar, fg_color="transparent")
+        lf.pack(side="left", padx=20, pady=10)
+        ctk.CTkLabel(lf, text="⚡ MediaForge", font=("Segoe UI", 18, "bold"),
+                     text_color=COLORS["accent"]).pack(side="left")
+        ctk.CTkLabel(lf, text="  — Convertisseur multimédia", font=FONTS["body"],
+                     text_color=COLORS["muted"]).pack(side="left")
+
+        badge = ctk.CTkFrame(bar, fg_color=COLORS["card"], corner_radius=20)
+        badge.pack(side="right", padx=20, pady=14)
+        ctk.CTkLabel(badge, text="FFmpeg ✓", font=FONTS["small"],
+                     text_color=COLORS["success"]).pack(padx=12, pady=4)
+
+    def _build_tabs(self):
+        tv = ctk.CTkTabview(
+            self,
+            fg_color=COLORS["bg"],
+            segmented_button_fg_color=COLORS["panel"],
+            segmented_button_selected_color=COLORS["accent4"],
+            segmented_button_selected_hover_color="#E55A25",
+            segmented_button_unselected_color=COLORS["panel"],
+            segmented_button_unselected_hover_color=COLORS["border"],
+            text_color=COLORS["text"],
+            corner_radius=0,
+        )
+        tv.pack(fill="both", expand=True)
+
+        monitor_frame  = tv.add("📡  Moniteur Lives")
+        recorder_frame = tv.add("🔴  Live Recorder")
+        publish_frame  = tv.add("🚀  Publier")
+        mp4_frame      = tv.add("🎬  Vidéo → MP4")
+        regen_frame    = tv.add("🖼  Vignette & Sprite")
+        transcript_frame = tv.add("🎙  Transcript")
+
+        monitor_tab  = LiveMonitorTab(monitor_frame)
+        monitor_tab.pack(fill="both", expand=True)
+
+        recorder_tab = LiveRecorderTab(recorder_frame, registry_tab=monitor_tab)
+        recorder_tab.pack(fill="both", expand=True)
+
+        PublishTab(publish_frame).pack(fill="both", expand=True)
+        VideoToMP4Tab(mp4_frame).pack(fill="both", expand=True)
+        RegenerateTab(regen_frame).pack(fill="both", expand=True)
+        TranscriptTab(transcript_frame).pack(fill="both", expand=True)
+
+        tv.set("🔴  Live Recorder")
+
+
+# ─── Point d'entrée ──────────────────────────────────────────────────────────
+
+if __name__ == "__main__":
+    app = MediaForge()
+    app.mainloop()

@@ -1,0 +1,459 @@
+{
+    "require": [
+        [
+            "ScheduledServerJS",
+            "handle",
+            null,
+            [
+                {
+                    "__bbox": {
+                        "define": [
+                            [
+                                "cr:6885",
+                                [
+                                    "VideoPlayerScrubberPreviewImageOnCanvas.react"
+                                ],
+                                {
+                                    "__rc": [
+                                        "VideoPlayerScrubberPreviewImageOnCanvas.react",
+                                        null
+                                    ]
+                                },
+                                -1
+                            ],
+                            [
+                                "VideoPlayerShakaPerformanceLoggerConfig",
+                                [],
+                                {
+                                    "isSampled": false
+                                },
+                                1760
+                            ]
+                        ],
+                        "require": [
+                            [
+                                "VideoPlayerScrubberDefaultPreview_video$normalization.graphql"
+                            ],
+                            [
+                                "VideoPlayerScrubberDefaultPreview.react"
+                            ],
+                            [
+                                "useVideoPlayerShakaPerformanceLoggerRelayImpl_init$normalization.graphql"
+                            ],
+                            [
+                                "VideoPlayerShakaPerformanceLogger"
+                            ],
+                            [
+                                "useVideoPlayerShakaPerformanceLoggerBuilder_init$normalization.graphql"
+                            ],
+                            [
+                                "VideoPlayerShakaPerformanceLoggerBuilder"
+                            ],
+                            [
+                                "VideoPlayerSettingsMenuLatencyPaneToggle_video$normalization.graphql"
+                            ],
+                            [
+                                "VideoPlayerSettingsMenuLatencyPaneToggle.react"
+                            ],
+                            [
+                                "VideoPlayerSettingsMenuLatencyPane_video$normalization.graphql"
+                            ],
+                            [
+                                "VideoPlayerSettingsMenuLatencyPane.react"
+                            ],
+                            [
+                                "VideoPlayerLiveRewindControlsGroup_video$normalization.graphql"
+                            ],
+                            [
+                                "VideoPlayerLiveRewindControlsGroup.react"
+                            ],
+                            [
+                                "VideoPlayerClipVideoControl_video$normalization.graphql"
+                            ],
+                            [
+                                "VideoPlayerClipVideoControl.react"
+                            ],
+                            [
+                                "emptyFunction",
+                                "thatReturns",
+                                [
+                                    "RequireDeferredReference"
+                                ],
+                                [
+                                    [
+                                        {
+                                            "__dr": "VideoPlayerScrubberDefaultPreview_video$normalization.graphql"
+                                        },
+                                        {
+                                            "__dr": "VideoPlayerScrubberDefaultPreview.react"
+                                        },
+                                        {
+                                            "__dr": "useVideoPlayerShakaPerformanceLoggerRelayImpl_init$normalization.graphql"
+                                        },
+                                        {
+                                            "__dr": "VideoPlayerShakaPerformanceLogger"
+                                        },
+                                        {
+                                            "__dr": "useVideoPlayerShakaPerformanceLoggerBuilder_init$normalization.graphql"
+                                        },
+                                        {
+                                            "__dr": "VideoPlayerShakaPerformanceLoggerBuilder"
+                                        },
+                                        {
+                                            "__dr": "VideoPlayerSettingsMenuLatencyPaneToggle_video$normalization.graphql"
+                                        },
+                                        {
+                                            "__dr": "VideoPlayerSettingsMenuLatencyPaneToggle.react"
+                                        },
+                                        {
+                                            "__dr": "VideoPlayerSettingsMenuLatencyPane_video$normalization.graphql"
+                                        },
+                                        {
+                                            "__dr": "VideoPlayerSettingsMenuLatencyPane.react"
+                                        },
+                                        {
+                                            "__dr": "VideoPlayerLiveRewindControlsGroup_video$normalization.graphql"
+                                        },
+                                        {
+                                            "__dr": "VideoPlayerLiveRewindControlsGroup.react"
+                                        },
+                                        {
+                                            "__dr": "VideoPlayerClipVideoControl_video$normalization.graphql"
+                                        },
+                                        {
+                                            "__dr": "VideoPlayerClipVideoControl.react"
+                                        }
+                                    ]
+                                ]
+                            ],
+                            [
+                                "RelayPrefetchedStreamCache",
+                                "next",
+                                [],
+                                [
+                                    "adp_CometTahoeRootQueryRelayPreloader_69c8e9911a8b73144673096",
+                                    {
+                                        "__bbox": {
+                                            "complete": false,
+                                            "result": {
+                                                "data": {
+                                                    "video": {
+                                                        "creation_story": {
+                                                            "encrypted_tracking": "AZamQJSiB9amzZvp7RFhdmV6UWUMuJfj73g0NDB_Asi14vmEvtB8bU0q5BBUAo_OpHrdJd1ON6Lahe7IInPalf0C2JGZ-bHPMNO4rqaJnFIIKdIJ_rnEg0iVzMdXriXGVKJl5kxgiPifEmOtTzR_KeMTwwKqI52t3nva1V2tbc3cpbzbryD-vNyD3qc-ue1Ax5Qn60M3gFnq_Otdiu0hnCjmHWKZbp4VysSt4QdX2oC4AcLxNbpGSs7MXc0NoDJIf6cW2woHmDrptly7VcN7Boyz7n8OBtyWtNPYRbAtYrSMU9C7PX32_W0VMlL1Nhi0OatpNv6iVzjd4wKm1m5inL35JcvHMQfnWfvU1QYYPTlN7PJcCNor-lx9BY1ERWyohO7Lq_2ZAN8MGHs1CpBRDA0IxGUQYC_p-h7pNrOwq5yZf52MVUR73MSk5RNHB7fVI1VwzR-JLo6dCCwjI5PJMtf7OklWH0ObYyL3u2epgzcKNIoGoSWPsUaBk91oAHWZgLHwHveWKHd_5017qfyP0vbPncvZcfYpLQOPPxLFAoGKjDFbzGhZ0F4nQl7L7iPn1DITXHD0MRyl2ZEDJZIWDn8SgHlgL6fMLup2iYRy-2ms2pTZ7oGc3C25MTWoLpXdklgQNnSvuT7mKEZ_fDQe36J_BG0_Vn2z-sGz5G0jbnmlRB82X7rQny4Ir9H3WIEV0DXB7iMSoeal_fjeN8EvkpcQJqyh2fjMSHZCzDTGEW2FKHKXJ9tg-_vG5lvWHqLzJEIPczeAmK2LF3QkQ-H1HxLLffKGUTfmcxy4hByuJ6agISrnbAZ-RfnERQxGB9__bVfSKjHU16bgU0jF3vnUlWDeSTdWWHe-dfbS2uud5Cw6Keg6EXDApp2vF_qSf9UV8zQeldkESFymz3W1UOPBMm0d7wflPOlLf8KV3kf0l-9iEGRSWZJ66z_CbvxQoGqFy7IgD2lLxatGVqFyAEwUJb7DEm1CqicjsmQLea10lDrYRcrtKzKjS4-q9MAvNGyHEJ6l5YL5dpZSiHTiCzf_F2V4oOWzsEYufnrx7-7cyovYyavOGUlCCSu93xjtwBdByrVqEZpKJisLzcDFtPtnQhxF9O04kn1uJsYL6AVygn9X7v5s2-UQx_Zsv22QBQsxshHh-u0aIEd423C03IJuCSnF05-p8oQ4UMmP3LRCQyA_w65KZBTEv3aIqmZ4Ik3AJns",
+                                                            "viewability_config": [
+                                                                8,
+                                                                5
+                                                            ],
+                                                            "client_view_config": {
+                                                                "can_delay_log_impression": false,
+                                                                "use_banzai_signal_imp": true,
+                                                                "use_banzai_vital_imp": true
+                                                            },
+                                                            "id": "UzpfSTEwMDA0NDQwODY4MDEyODpWSzo5ODc3MjYxNzY5MTU1MDM="
+                                                        },
+                                                        "cix_screen": null,
+                                                        "preferred_thumbnail": {
+                                                            "image": {
+                                                                "uri": "https://scontent.fcmn3-1.fna.fbcdn.net/v/t15.5256-10/659167672_1144037888583159_4591936731312719537_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=100&ccb=1-7&_nc_sid=be8305&_nc_ohc=IRhA0c1WkP0Q7kNvwE3U_mM&_nc_oc=AdoCKQJ5Xh7zTw3z_ycYCQED0hr47hAbYwfuPAyOroozXJFTdR7c4N0Wuc7YZF_X-oA&_nc_zt=23&_nc_ht=scontent.fcmn3-1.fna&_nc_gid=IZw8aEi9qpVElcuBeYbboQ&_nc_ss=7a30f&oh=00_Afxf2d_0y514H4o9uqvCeay-niFud9X3TLbhgQXA-qtLqw&oe=69CEC07D"
+                                                            },
+                                                            "id": "1144037885249826",
+                                                            "image_preview_payload": "ACoYqEBvp3pqrzgHoMn2pp4fHOTxUhiYnI+XjoKHqSm1s2vTQmW3VoXfAJH17Yqsudu48j0/zzWkqMkLAnqM4Gf59qyyVXjr6+h+nem46CU5d2r+b1E8vcORkYyf88dqf5MX9z+f/wAVScbcjv8ApUvy1Fy43luySEpKR5i7BxkkkDH51BufOevp9KKKdx1IKNrdSUSvtKknaeoqqVBGfX9KKKLmK1JolTac5yPYnP5D/GniUY+61FFK52xpppPXY//Z"
+                                                        },
+                                                        "if_copy_timestamp_link_enabled": null,
+                                                        "id": "987726176915503",
+                                                        "is_clipping_enabled": true,
+                                                        "live_rewind_enabled": true,
+                                                        "owner": {
+                                                            "__typename": "User",
+                                                            "id": "100044408680128",
+                                                            "__isVideoOwner": "User",
+                                                            "has_professional_features_for_watch": true
+                                                        },
+                                                        "playable_duration_in_ms": 1656000,
+                                                        "is_huddle": false,
+                                                        "url": "https://www.facebook.com/blankgamingchannel/videos/987726176915503/",
+                                                        "if_viewer_can_use_latency_menu": {
+                                                            "id": "987726176915503",
+                                                            "__module_operation_LiveVideoLatencyMenuContextProvider_video_if_viewer_can_use_latency_menu": {
+                                                                "__dr": "VideoPlayerSettingsMenuLatencyPane_video$normalization.graphql"
+                                                            },
+                                                            "__module_component_LiveVideoLatencyMenuContextProvider_video_if_viewer_can_use_latency_menu": {
+                                                                "__dr": "VideoPlayerSettingsMenuLatencyPane.react"
+                                                            }
+                                                        },
+                                                        "if_viewer_can_use_latency_menu_toggle": {
+                                                            "id": "987726176915503",
+                                                            "__module_operation_LiveVideoLatencyMenuContextProvider_video_if_viewer_can_use_latency_menu_toggle": {
+                                                                "__dr": "VideoPlayerSettingsMenuLatencyPaneToggle_video$normalization.graphql"
+                                                            },
+                                                            "__module_component_LiveVideoLatencyMenuContextProvider_video_if_viewer_can_use_latency_menu_toggle": {
+                                                                "__dr": "VideoPlayerSettingsMenuLatencyPaneToggle.react"
+                                                            }
+                                                        },
+                                                        "captions_url": null,
+                                                        "video_available_captions_locales": [],
+                                                        "if_viewer_can_see_community_moderation_tools": null,
+                                                        "if_viewer_can_use_live_rewind": {
+                                                            "video_player_scrubber_preview_renderer": {
+                                                                "__typename": "XFBVideoPlayerScrubberDefaultPreviewRenderer",
+                                                                "video": {
+                                                                    "scrubber_preview_thumbnail_information": {
+                                                                        "sprite_uris": [],
+                                                                        "thumbnail_width": 0,
+                                                                        "thumbnail_height": 0,
+                                                                        "has_preview_thumbnails": false,
+                                                                        "num_images_per_row": 0,
+                                                                        "max_number_of_images_per_sprite": 0,
+                                                                        "time_interval_between_image": 0
+                                                                    },
+                                                                    "id": "987726176915503"
+                                                                },
+                                                                "__module_operation_VideoPlayerScrubberPreview_video": {
+                                                                    "__dr": "VideoPlayerScrubberDefaultPreview_video$normalization.graphql"
+                                                                },
+                                                                "__module_component_VideoPlayerScrubberPreview_video": {
+                                                                    "__dr": "VideoPlayerScrubberDefaultPreview.react"
+                                                                }
+                                                            },
+                                                            "video_player_scrubber_base_content_renderer": null,
+                                                            "__module_operation_VideoPlayerLiveVideoControls_video_if_viewer_can_use_live_rewind": {
+                                                                "__dr": "VideoPlayerLiveRewindControlsGroup_video$normalization.graphql"
+                                                            },
+                                                            "__module_component_VideoPlayerLiveVideoControls_video_if_viewer_can_use_live_rewind": {
+                                                                "__dr": "VideoPlayerLiveRewindControlsGroup.react"
+                                                            },
+                                                            "id": "987726176915503"
+                                                        },
+                                                        "if_viewer_can_use_clipping": {
+                                                            "__typename": "Video",
+                                                            "__module_operation_VideoPlayerLiveVideoControls_video_if_viewer_can_use_clipping": {
+                                                                "__dr": "VideoPlayerClipVideoControl_video$normalization.graphql"
+                                                            },
+                                                            "__module_component_VideoPlayerLiveVideoControls_video_if_viewer_can_use_clipping": {
+                                                                "__dr": "VideoPlayerClipVideoControl.react"
+                                                            },
+                                                            "id": "987726176915503",
+                                                            "__module_operation_VideoPlayerDefaultControlsImplNotLive_video_if_viewer_can_use_clipping": {
+                                                                "__dr": "VideoPlayerClipVideoControl_video$normalization.graphql"
+                                                            },
+                                                            "__module_component_VideoPlayerDefaultControlsImplNotLive_video_if_viewer_can_use_clipping": {
+                                                                "__dr": "VideoPlayerClipVideoControl.react"
+                                                            }
+                                                        },
+                                                        "if_viewer_can_see_costreaming_tools": null,
+                                                        "video_player_scrubber_preview_renderer": {
+                                                            "__typename": "XFBVideoPlayerScrubberDefaultPreviewRenderer",
+                                                            "video": {
+                                                                "scrubber_preview_thumbnail_information": {
+                                                                    "sprite_uris": [],
+                                                                    "thumbnail_width": 0,
+                                                                    "thumbnail_height": 0,
+                                                                    "has_preview_thumbnails": false,
+                                                                    "num_images_per_row": 0,
+                                                                    "max_number_of_images_per_sprite": 0,
+                                                                    "time_interval_between_image": 0
+                                                                },
+                                                                "id": "987726176915503"
+                                                            },
+                                                            "__module_operation_VideoPlayerScrubberPreview_video": {
+                                                                "__dr": "VideoPlayerScrubberDefaultPreview_video$normalization.graphql"
+                                                            },
+                                                            "__module_component_VideoPlayerScrubberPreview_video": {
+                                                                "__dr": "VideoPlayerScrubberDefaultPreview.react"
+                                                            }
+                                                        },
+                                                        "video_player_scrubber_base_content_renderer": null,
+                                                        "animated_image_caption": null,
+                                                        "width": 640,
+                                                        "height": 360,
+                                                        "broadcaster_origin": "cco",
+                                                        "broadcast_id": "1520482686108673",
+                                                        "broadcast_status": "LIVE",
+                                                        "is_live_streaming": true,
+                                                        "is_live_trace_enabled": false,
+                                                        "is_looping": false,
+                                                        "is_video_broadcast": true,
+                                                        "is_podcast_video": false,
+                                                        "loop_count": 0,
+                                                        "is_spherical": false,
+                                                        "is_spherical_enabled": true,
+                                                        "unsupported_browser_message": null,
+                                                        "pmv_metadata": null,
+                                                        "latency_sensitive_config": {
+                                                            "broadcast_latency_sensitivity": "LOW"
+                                                        },
+                                                        "live_playback_instrumentation_configs": {
+                                                            "is_client_triggered_trace_enabled": false
+                                                        },
+                                                        "is_ncsr": false,
+                                                        "permalink_url": "https://www.facebook.com/blankgamingchannel/videos/987726176915503/",
+                                                        "seo_web_crawler_lookaside_url": null,
+                                                        "dash_prefetch_experimental": [],
+                                                        "video_status_type": "OK",
+                                                        "can_use_oz": true,
+                                                        "min_quality_preference": null,
+                                                        "spherical_video_fallback_urls": null,
+                                                        "comet_video_player_nextgendash_availability": "UNAVAILABLE_TEMPORARY_FOR_THIS_KIND_OF_VIDEO_3",
+                                                        "videoDeliveryLegacyFields": {
+                                                            "dash_manifest_xml_string": "<?xml version=\"1.0\"?>\n<MPD xmlns=\"urn:mpeg:dash:schema:mpd:2011\" xmlns:xsi=\"http://www.w3.org/2011/XMLSchema-instance\" type=\"dynamic\" xsi:schemaLocation=\"urn:mpeg:DASH:schema:MPD:2011 DASH-MPD.xsd\" profiles=\"urn:mpeg:dash:profile:isoff-live:2011\" availabilityStartTime=\"2026-03-29T01:30:27-07:00\" availabilityEndTime=\"2026-03-29T02:05:26-07:00\" timeShiftBufferDepth=\"PT20S\" suggestedPresentationDelay=\"PT2S\" minBufferTime=\"PT1S\" publishTime=\"2026-03-29T01:30:27-07:00\" minimumUpdatePeriod=\"PT1S\" validationErrors=\"\" FBIsLiveTemplated=\"true\" currentServerTimeMs=\"1774774644993\" firstAvTimeMs=\"1774773017734\" lastVideoFrameTs=\"1633999\" loapStreamId=\"1520482686108673\" publishFrameTime=\"10033\"><Period id=\"dash-abr-ibr-audio\" start=\"PT0S\"><AdaptationSet segmentAlignment=\"true\" maxWidth=\"1920\" maxHeight=\"1080\" maxFrameRate=\"60\"><Representation id=\"dash-lp-md-v\" mimeType=\"video/mp4\" codecs=\"avc1.4d401e\" width=\"640\" height=\"360\" frameRate=\"30\" startWithSAP=\"1\" bandwidth=\"507603\" FBMaxBandwidth=\"566664\" FBPlaybackResolutionMos=\"480:64.37,1080:41.63,144:93.40\" FBQualityClass=\"sd\" FBQualityLabel=\"360p\"><BaseURL>https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/</BaseURL><SegmentTemplate presentationTimeOffset=\"0\" timescale=\"1000\" initialization=\"../dash-lp-md-v/1520482686108673_0-init.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" media=\"../dash-lp-md-v/1520482686108673_0-$Time$.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\"><SegmentTimeline FBAverageDuration=\"2000\" FBPredictedMedia=\"../ID/dash-lp-md-v/1520482686108673_0-$Number$.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" FBPredictedMediaEndNumber=\"910\" FBPredictedMediaStartNumber=\"100\" FBStartPts=\"10033\"><S t=\"1612033\" d=\"2000\"/><S t=\"1614033\" d=\"2000\"/><S t=\"1616033\" d=\"2000\"/><S t=\"1618033\" d=\"2000\"/><S t=\"1620033\" d=\"2000\"/><S t=\"1622033\" d=\"2000\"/><S t=\"1624033\" d=\"2000\"/><S t=\"1626033\" d=\"2000\"/><S t=\"1628033\" d=\"2000\"/><S t=\"1630033\" d=\"2000\"/></SegmentTimeline></SegmentTemplate><FBRepresentationMPDURL>https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/1520482686108673.mpd?_nc_zt=28&amp;ccb=2-4&amp;ms=m_CTPAL&amp;sc_t=1&amp;oh=00_AfzUpQnO8qGoVO7YSlOzVeGEjXj9CooGpuf_4hrnRBGUkQ&amp;oe=69CAB70A</FBRepresentationMPDURL><FBInitializationBinary>AAAAHGZ0eXBpc282AAAAAWlzb21pc282ZGFzaAAAAnxtb292AAAAbG12aGQAAAAAAAAAAAAAAAAAAAPoAAAAAAABAAABAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AAAAKG12ZXgAAAAgdHJleAAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAeB0cmFrAAAAXHRraGQAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAoAAAAFoAAAAAAF8bWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAAAD6AAAAABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABJ21pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAOdzdGJsAAAAm3N0c2QAAAAAAAAAAQAAAIthdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAoABaABIAAAASAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGP//AAAANWF2Y0MBZAAf/+EAHWdkAB+s2QCgL/lwFqAgICgAAAMACAAAPoB4wYywAQAFaOvnPI8AAAAQc3R0cwAAAAAAAAAAAAAAEHN0c2MAAAAAAAAAAAAAABRzdHN6AAAAAAAAAAAAAAAAAAAAEHN0Y28AAAAAAAAAAA==</FBInitializationBinary></Representation><Representation id=\"dash-lp-qd-v\" mimeType=\"video/mp4\" codecs=\"avc1.4d401e\" width=\"256\" height=\"144\" frameRate=\"30\" startWithSAP=\"1\" bandwidth=\"107519\" FBMaxBandwidth=\"115748\" FBPlaybackResolutionMos=\"480:19.31,1080:15.30,144:69.16\" FBQualityClass=\"sd\" FBQualityLabel=\"144p\"><BaseURL>https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/</BaseURL><SegmentTemplate presentationTimeOffset=\"0\" timescale=\"1000\" initialization=\"../dash-lp-qd-v/1520482686108673_0-init.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" media=\"../dash-lp-qd-v/1520482686108673_0-$Time$.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\"><SegmentTimeline FBAverageDuration=\"2000\" FBPredictedMedia=\"../ID/dash-lp-qd-v/1520482686108673_0-$Number$.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" FBPredictedMediaEndNumber=\"910\" FBPredictedMediaStartNumber=\"100\" FBStartPts=\"10033\"><S t=\"1612033\" d=\"2000\"/><S t=\"1614033\" d=\"2000\"/><S t=\"1616033\" d=\"2000\"/><S t=\"1618033\" d=\"2000\"/><S t=\"1620033\" d=\"2000\"/><S t=\"1622033\" d=\"2000\"/><S t=\"1624033\" d=\"2000\"/><S t=\"1626033\" d=\"2000\"/><S t=\"1628033\" d=\"2000\"/><S t=\"1630033\" d=\"2000\"/></SegmentTimeline></SegmentTemplate><FBRepresentationMPDURL>https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/1520482686108673.mpd?_nc_zt=28&amp;ccb=2-4&amp;ms=m_CTPAL&amp;sc_t=1&amp;oh=00_AfzUpQnO8qGoVO7YSlOzVeGEjXj9CooGpuf_4hrnRBGUkQ&amp;oe=69CAB70A</FBRepresentationMPDURL><FBInitializationBinary>AAAAHGZ0eXBpc282AAAAAWlzb21pc282ZGFzaAAAAnptb292AAAAbG12aGQAAAAAAAAAAAAAAAAAAAPoAAAAAAABAAABAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AAAAKG12ZXgAAAAgdHJleAAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAd50cmFrAAAAXHRraGQAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAQAAAACQAAAAAAF6bWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAAAD6AAAAABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABJW1pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAOVzdGJsAAAAmXN0c2QAAAAAAAAAAQAAAIlhdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAQAAkABIAAAASAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGP//AAAAM2F2Y0MBZAAN/+EAG2dkAA2s2QEBOwFqAgICgAAAAwCAAAPoB4oUywEABWjr5zyPAAAAEHN0dHMAAAAAAAAAAAAAABBzdHNjAAAAAAAAAAAAAAAUc3RzegAAAAAAAAAAAAAAAAAAABBzdGNvAAAAAAAAAAA=</FBInitializationBinary></Representation><Representation id=\"dash-lp-ld-v\" mimeType=\"video/mp4\" codecs=\"avc1.4d401e\" width=\"426\" height=\"240\" frameRate=\"30\" startWithSAP=\"1\" bandwidth=\"257585\" FBMaxBandwidth=\"281020\" FBPlaybackResolutionMos=\"480:39.38,1080:25.31,144:87.46\" FBQualityClass=\"sd\" FBQualityLabel=\"240p\" FBDefaultQuality=\"1\"><BaseURL>https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/</BaseURL><SegmentTemplate presentationTimeOffset=\"0\" timescale=\"1000\" initialization=\"../dash-lp-ld-v/1520482686108673_0-init.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" media=\"../dash-lp-ld-v/1520482686108673_0-$Time$.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\"><SegmentTimeline FBAverageDuration=\"2000\" FBPredictedMedia=\"../ID/dash-lp-ld-v/1520482686108673_0-$Number$.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" FBPredictedMediaEndNumber=\"910\" FBPredictedMediaStartNumber=\"100\" FBStartPts=\"10033\"><S t=\"1612033\" d=\"2000\"/><S t=\"1614033\" d=\"2000\"/><S t=\"1616033\" d=\"2000\"/><S t=\"1618033\" d=\"2000\"/><S t=\"1620033\" d=\"2000\"/><S t=\"1622033\" d=\"2000\"/><S t=\"1624033\" d=\"2000\"/><S t=\"1626033\" d=\"2000\"/><S t=\"1628033\" d=\"2000\"/><S t=\"1630033\" d=\"2000\"/></SegmentTimeline></SegmentTemplate><FBRepresentationMPDURL>https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/1520482686108673.mpd?_nc_zt=28&amp;ccb=2-4&amp;ms=m_CTPAL&amp;sc_t=1&amp;oh=00_AfzUpQnO8qGoVO7YSlOzVeGEjXj9CooGpuf_4hrnRBGUkQ&amp;oe=69CAB70A</FBRepresentationMPDURL><FBInitializationBinary>AAAAHGZ0eXBpc282AAAAAWlzb21pc282ZGFzaAAAAn9tb292AAAAbG12aGQAAAAAAAAAAAAAAAAAAAPoAAAAAAABAAABAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AAAAKG12ZXgAAAAgdHJleAAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAeN0cmFrAAAAXHRraGQAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAaoAAADwAAAAAAF/bWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAAAD6AAAAABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABKm1pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAOpzdGJsAAAAnnN0c2QAAAAAAAAAAQAAAI5hdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAaoA8ABIAAAASAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGP//AAAAOGF2Y0MBZAAe/+EAIGdkAB6s2QGx/k//AoACf2oCAgKAAAADAIAAA+gHixbLAQAFaOvnPI8AAAAQc3R0cwAAAAAAAAAAAAAAEHN0c2MAAAAAAAAAAAAAABRzdHN6AAAAAAAAAAAAAAAAAAAAEHN0Y28AAAAAAAAAAA==</FBInitializationBinary></Representation><Representation id=\"dash-lp-hd-v\" mimeType=\"video/mp4\" codecs=\"avc1.4d401e\" width=\"854\" height=\"480\" frameRate=\"30\" startWithSAP=\"1\" bandwidth=\"999420\" FBMaxBandwidth=\"1170872\" FBPlaybackResolutionMos=\"1080:55.33,144:95.76,480:78.49\" FBQualityClass=\"sd\" FBQualityLabel=\"480p\"><BaseURL>https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/</BaseURL><SegmentTemplate presentationTimeOffset=\"0\" timescale=\"1000\" initialization=\"../dash-lp-hd-v/1520482686108673_0-init.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" media=\"../dash-lp-hd-v/1520482686108673_0-$Time$.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\"><SegmentTimeline FBAverageDuration=\"2000\" FBPredictedMedia=\"../ID/dash-lp-hd-v/1520482686108673_0-$Number$.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" FBPredictedMediaEndNumber=\"910\" FBPredictedMediaStartNumber=\"100\" FBStartPts=\"10033\"><S t=\"1612033\" d=\"2000\"/><S t=\"1614033\" d=\"2000\"/><S t=\"1616033\" d=\"2000\"/><S t=\"1618033\" d=\"2000\"/><S t=\"1620033\" d=\"2000\"/><S t=\"1622033\" d=\"2000\"/><S t=\"1624033\" d=\"2000\"/><S t=\"1626033\" d=\"2000\"/><S t=\"1628033\" d=\"2000\"/><S t=\"1630033\" d=\"2000\"/></SegmentTimeline></SegmentTemplate><FBRepresentationMPDURL>https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/1520482686108673.mpd?_nc_zt=28&amp;ccb=2-4&amp;ms=m_CTPAL&amp;sc_t=1&amp;oh=00_AfzUpQnO8qGoVO7YSlOzVeGEjXj9CooGpuf_4hrnRBGUkQ&amp;oe=69CAB70A</FBRepresentationMPDURL><FBInitializationBinary>AAAAHGZ0eXBpc282AAAAAWlzb21pc282ZGFzaAAAAoBtb292AAAAbG12aGQAAAAAAAAAAAAAAAAAAAPoAAAAAAABAAABAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AAAAKG12ZXgAAAAgdHJleAAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAeR0cmFrAAAAXHRraGQAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAA1YAAAHgAAAAAAGAbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAAAD6AAAAABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABK21pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAOtzdGJsAAAAn3N0c2QAAAAAAAAAAQAAAI9hdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAA1YB4ABIAAAASAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGP//AAAAOWF2Y0MBZAAf/+EAIWdkAB+s2QDYPeb/8FAAUBagICAoAAADAAgAAD6AeMGMsAEABWjr5zyPAAAAEHN0dHMAAAAAAAAAAAAAABBzdHNjAAAAAAAAAAAAAAAUc3RzegAAAAAAAAAAAAAAAAAAABBzdGNvAAAAAAAAAAA=</FBInitializationBinary></Representation><Representation id=\"dash-lp-hd1-v\" mimeType=\"video/mp4\" codecs=\"avc1.4d401e\" width=\"1280\" height=\"720\" frameRate=\"30\" startWithSAP=\"1\" bandwidth=\"1957277\" FBMaxBandwidth=\"2526444\" FBPlaybackResolutionMos=\"480:89.10,1080:71.90,144:97.46\" FBQualityClass=\"hd\" FBQualityLabel=\"720p\"><BaseURL>https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/</BaseURL><SegmentTemplate presentationTimeOffset=\"0\" timescale=\"1000\" initialization=\"../dash-lp-hd1-v/1520482686108673_0-init.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" media=\"../dash-lp-hd1-v/1520482686108673_0-$Time$.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\"><SegmentTimeline FBAverageDuration=\"2000\" FBPredictedMedia=\"../ID/dash-lp-hd1-v/1520482686108673_0-$Number$.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" FBPredictedMediaEndNumber=\"910\" FBPredictedMediaStartNumber=\"100\" FBStartPts=\"10033\"><S t=\"1612033\" d=\"2000\"/><S t=\"1614033\" d=\"2000\"/><S t=\"1616033\" d=\"2000\"/><S t=\"1618033\" d=\"2000\"/><S t=\"1620033\" d=\"2000\"/><S t=\"1622033\" d=\"2000\"/><S t=\"1624033\" d=\"2000\"/><S t=\"1626033\" d=\"2000\"/><S t=\"1628033\" d=\"2000\"/><S t=\"1630033\" d=\"2000\"/></SegmentTimeline></SegmentTemplate><FBRepresentationMPDURL>https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/1520482686108673.mpd?_nc_zt=28&amp;ccb=2-4&amp;ms=m_CTPAL&amp;sc_t=1&amp;oh=00_AfzUpQnO8qGoVO7YSlOzVeGEjXj9CooGpuf_4hrnRBGUkQ&amp;oe=69CAB70A</FBRepresentationMPDURL><FBInitializationBinary>AAAAHGZ0eXBpc282AAAAAWlzb21pc282ZGFzaAAAAnttb292AAAAbG12aGQAAAAAAAAAAAAAAAAAAAPoAAAAAAABAAABAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AAAAKG12ZXgAAAAgdHJleAAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAd90cmFrAAAAXHRraGQAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAABQAAAALQAAAAAAF7bWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAAAD6AAAAABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABJm1pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAOZzdGJsAAAAmnN0c2QAAAAAAAAAAQAAAIphdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAABQAC0ABIAAAASAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGP//AAAANGF2Y0MBZAAg/+EAHGdkACCs2QBQBbsBagICAoAAAAMAgAAD6AeMGMsBAAVo6+c8jwAAABBzdHRzAAAAAAAAAAAAAAAQc3RzYwAAAAAAAAAAAAAAFHN0c3oAAAAAAAAAAAAAAAAAAAAQc3RjbwAAAAAAAAAA</FBInitializationBinary></Representation><Representation id=\"dash-lp-hd2-v\" mimeType=\"video/mp4\" codecs=\"avc1.4d401e\" width=\"1920\" height=\"1080\" frameRate=\"30\" startWithSAP=\"1\" bandwidth=\"4175238\" FBMaxBandwidth=\"5818880\" FBPlaybackResolutionMos=\"480:94.71,144:98.67,1080:85.84\" FBQualityClass=\"hd\" FBQualityLabel=\"1080p+\"><BaseURL>https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/</BaseURL><SegmentTemplate presentationTimeOffset=\"0\" timescale=\"1000\" initialization=\"../dash-lp-hd2-v/1520482686108673_0-init.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" media=\"../dash-lp-hd2-v/1520482686108673_0-$Time$.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\"><SegmentTimeline FBAverageDuration=\"2000\" FBPredictedMedia=\"../ID/dash-lp-hd2-v/1520482686108673_0-$Number$.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" FBPredictedMediaEndNumber=\"910\" FBPredictedMediaStartNumber=\"100\" FBStartPts=\"10033\"><S t=\"1612033\" d=\"2000\"/><S t=\"1614033\" d=\"2000\"/><S t=\"1616033\" d=\"2000\"/><S t=\"1618033\" d=\"2000\"/><S t=\"1620033\" d=\"2000\"/><S t=\"1622033\" d=\"2000\"/><S t=\"1624033\" d=\"2000\"/><S t=\"1626033\" d=\"2000\"/><S t=\"1628033\" d=\"2000\"/><S t=\"1630033\" d=\"2000\"/></SegmentTimeline></SegmentTemplate><FBRepresentationMPDURL>https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/1520482686108673.mpd?_nc_zt=28&amp;ccb=2-4&amp;ms=m_CTPAL&amp;sc_t=1&amp;oh=00_AfzUpQnO8qGoVO7YSlOzVeGEjXj9CooGpuf_4hrnRBGUkQ&amp;oe=69CAB70A</FBRepresentationMPDURL><FBInitializationBinary>AAAAHGZ0eXBpc282AAAAAWlzb21pc282ZGFzaAAAAn1tb292AAAAbG12aGQAAAAAAAAAAAAAAAAAAAPoAAAAAAABAAABAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AAAAKG12ZXgAAAAgdHJleAAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAeF0cmFrAAAAXHRraGQAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAB4AAAAQ4AAAAAAF9bWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAAAD6AAAAABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABKG1pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAOhzdGJsAAAAnHN0c2QAAAAAAAAAAQAAAIxhdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAB4AEOABIAAAASAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGP//AAAANmF2Y0MBZAAq/+EAHmdkACqs2QB4AiflwFqAgICgAAADACAAAPoB4wYywAEABWjq5zyPAAAAEHN0dHMAAAAAAAAAAAAAABBzdHNjAAAAAAAAAAAAAAAUc3RzegAAAAAAAAAAAAAAAAAAABBzdGNvAAAAAAAAAAA=</FBInitializationBinary></Representation><Representation id=\"dash-lp-pst-v\" mimeType=\"video/mp4\" codecs=\"avc1.4d401e\" width=\"1920\" height=\"1080\" frameRate=\"60\" startWithSAP=\"1\" bandwidth=\"4007585\" FBMaxBandwidth=\"4392640\" FBPlaybackResolutionMos=\"480:100.00,1080:100.00,144:100.00\" FBQualityClass=\"hd\" FBQualityLabel=\"1080p (Source)\"><BaseURL>https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/</BaseURL><SegmentTemplate presentationTimeOffset=\"0\" timescale=\"1000\" initialization=\"../dash-lp-pst-v/1520482686108673_0-init.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" media=\"../dash-lp-pst-v/1520482686108673_0-$Time$.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\"><SegmentTimeline FBAverageDuration=\"2000\" FBPredictedMedia=\"../ID/dash-lp-pst-v/1520482686108673_0-$Number$.m4v?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" FBPredictedMediaEndNumber=\"910\" FBPredictedMediaStartNumber=\"100\" FBStartPts=\"10033\"><S t=\"1612033\" d=\"2000\"/><S t=\"1614033\" d=\"2000\"/><S t=\"1616033\" d=\"2000\"/><S t=\"1618033\" d=\"2000\"/><S t=\"1620033\" d=\"2000\"/><S t=\"1622033\" d=\"2000\"/><S t=\"1624033\" d=\"2000\"/><S t=\"1626033\" d=\"2000\"/><S t=\"1628033\" d=\"2000\"/><S t=\"1630033\" d=\"2000\"/></SegmentTimeline></SegmentTemplate><FBRepresentationMPDURL>https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/1520482686108673.mpd?_nc_zt=28&amp;ccb=2-4&amp;ms=m_CTPAL&amp;sc_t=1&amp;oh=00_AfzUpQnO8qGoVO7YSlOzVeGEjXj9CooGpuf_4hrnRBGUkQ&amp;oe=69CAB70A</FBRepresentationMPDURL><FBInitializationBinary>AAAAHGZ0eXBpc282AAAAAWlzb21pc282ZGFzaAAAAoRtb292AAAAbG12aGQAAAAAAAAAAAAAAAAAAAPoAAAAAAABAAABAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AAAAKG12ZXgAAAAgdHJleAAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAeh0cmFrAAAAXHRraGQAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAB4AAAAQ4AAAAAAGEbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAAAD6AAAAABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABL21pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAO9zdGJsAAAAo3N0c2QAAAAAAAAAAQAAAJNhdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAB4AEOABIAAAASAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGP//AAAAPWF2Y0MBZAAq/+EAJmdkACqsLKUB4AiflwFqAgICgAAB9AAA6mBwAAAehIAAD0JDd5cFAQAEaOuPLAAAABBzdHRzAAAAAAAAAAAAAAAQc3RzYwAAAAAAAAAAAAAAFHN0c3oAAAAAAAAAAAAAAAAAAAAQc3RjbwAAAAAAAAAA</FBInitializationBinary></Representation></AdaptationSet><AdaptationSet segmentAlignment=\"true\"><Representation id=\"dash-lp-md-a\" mimeType=\"audio/mp4\" codecs=\"mp4a.40.2\" audioSamplingRate=\"48000\" startWithSAP=\"1\" bandwidth=\"67055\" FBMaxBandwidth=\"69316\"><BaseURL>https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/</BaseURL><SegmentTemplate presentationTimeOffset=\"0\" timescale=\"1000\" initialization=\"../dash-lp-md-a/1520482686108673_0-init.m4a?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" media=\"../dash-lp-md-a/1520482686108673_0-$Time$.m4a?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\"><SegmentTimeline FBAverageDuration=\"2000\" FBPredictedMedia=\"../ID/dash-lp-md-a/1520482686108673_0-$Number$.m4a?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" FBPredictedMediaEndNumber=\"910\" FBPredictedMediaStartNumber=\"100\" FBStartPts=\"10033\"><S t=\"1612033\" d=\"2000\"/><S t=\"1614033\" d=\"2000\"/><S t=\"1616033\" d=\"2000\"/><S t=\"1618033\" d=\"2000\"/><S t=\"1620033\" d=\"2000\"/><S t=\"1622033\" d=\"2000\"/><S t=\"1624033\" d=\"2000\"/><S t=\"1626033\" d=\"2000\"/><S t=\"1628033\" d=\"2000\"/><S t=\"1630033\" d=\"2000\"/></SegmentTimeline></SegmentTemplate><FBInitializationBinary>AAAAHGZ0eXBpc282AAAAAWlzb21pc282ZGFzaAAAAjptb292AAAAbG12aGQAAAAAAAAAAAAAAAAAAAPoAAAAAAABAAABAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AAAAKG12ZXgAAAAgdHJleAAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAZ50cmFrAAAAXHRraGQAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAE6bWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAAAD6AAAAABVxAAAAAAALWhkbHIAAAAAAAAAAHNvdW4AAAAAAAAAAAAAAABTb3VuZEhhbmRsZXIAAAAA5W1pbmYAAAAQc21oZAAAAAAAAAAAAAAAJGRpbmYAAAAcZHJlZgAAAAAAAAABAAAADHVybCAAAAABAAAAqXN0YmwAAABdc3RzZAAAAAAAAAABAAAATW1wNGEAAAAAAAAAAQAAAAAAAAAAAAIAEAAAAAC7gAAAAAAAKWVzZHMAAAAAAxsAAAAEE0AVAAAAAAHxUQAB8U0FBCsRiAAGAQIAAAAQc3R0cwAAAAAAAAAAAAAAEHN0c2MAAAAAAAAAAAAAABRzdHN6AAAAAAAAAAAAAAAAAAAAEHN0Y28AAAAAAAAAAA==</FBInitializationBinary></Representation><Representation id=\"dash-lp-qd-a\" mimeType=\"audio/mp4\" codecs=\"mp4a.40.2\" audioSamplingRate=\"48000\" startWithSAP=\"1\" bandwidth=\"99021\" FBMaxBandwidth=\"100420\"><BaseURL>https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/</BaseURL><SegmentTemplate presentationTimeOffset=\"0\" timescale=\"1000\" initialization=\"../dash-lp-qd-a/1520482686108673_0-init.m4a?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" media=\"../dash-lp-qd-a/1520482686108673_0-$Time$.m4a?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\"><SegmentTimeline FBAverageDuration=\"2000\" FBPredictedMedia=\"../ID/dash-lp-qd-a/1520482686108673_0-$Number$.m4a?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" FBPredictedMediaEndNumber=\"910\" FBPredictedMediaStartNumber=\"100\" FBStartPts=\"10033\"><S t=\"1612033\" d=\"2000\"/><S t=\"1614033\" d=\"2000\"/><S t=\"1616033\" d=\"2000\"/><S t=\"1618033\" d=\"2000\"/><S t=\"1620033\" d=\"2000\"/><S t=\"1622033\" d=\"2000\"/><S t=\"1624033\" d=\"2000\"/><S t=\"1626033\" d=\"2000\"/><S t=\"1628033\" d=\"2000\"/><S t=\"1630033\" d=\"2000\"/></SegmentTimeline></SegmentTemplate><FBInitializationBinary>AAAAHGZ0eXBpc282AAAAAWlzb21pc282ZGFzaAAAAjptb292AAAAbG12aGQAAAAAAAAAAAAAAAAAAAPoAAAAAAABAAABAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AAAAKG12ZXgAAAAgdHJleAAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAZ50cmFrAAAAXHRraGQAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAE6bWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAAAD6AAAAABVxAAAAAAALWhkbHIAAAAAAAAAAHNvdW4AAAAAAAAAAAAAAABTb3VuZEhhbmRsZXIAAAAA5W1pbmYAAAAQc21oZAAAAAAAAAAAAAAAJGRpbmYAAAAcZHJlZgAAAAAAAAABAAAADHVybCAAAAABAAAAqXN0YmwAAABdc3RzZAAAAAAAAAABAAAATW1wNGEAAAAAAAAAAQAAAAAAAAAAAAIAEAAAAAC7gAAAAAAAKWVzZHMAAAAAAxsAAAAEE0AVAAAAAAHxUQAB8U0FBCsRiAAGAQIAAAAQc3R0cwAAAAAAAAAAAAAAEHN0c2MAAAAAAAAAAAAAABRzdHN6AAAAAAAAAAAAAAAAAAAAEHN0Y28AAAAAAAAAAA==</FBInitializationBinary></Representation><Representation id=\"dash-lp-ld-a\" mimeType=\"audio/mp4\" codecs=\"mp4a.40.2\" audioSamplingRate=\"48000\" startWithSAP=\"1\" bandwidth=\"131017\" FBMaxBandwidth=\"132484\"><BaseURL>https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/</BaseURL><SegmentTemplate presentationTimeOffset=\"0\" timescale=\"1000\" initialization=\"../dash-lp-ld-a/1520482686108673_0-init.m4a?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" media=\"../dash-lp-ld-a/1520482686108673_0-$Time$.m4a?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\"><SegmentTimeline FBAverageDuration=\"2000\" FBPredictedMedia=\"../ID/dash-lp-ld-a/1520482686108673_0-$Number$.m4a?ms=m_CL&amp;sc_t=1&amp;ccb=2-4\" FBPredictedMediaEndNumber=\"910\" FBPredictedMediaStartNumber=\"100\" FBStartPts=\"10033\"><S t=\"1612033\" d=\"2000\"/><S t=\"1614033\" d=\"2000\"/><S t=\"1616033\" d=\"2000\"/><S t=\"1618033\" d=\"2000\"/><S t=\"1620033\" d=\"2000\"/><S t=\"1622033\" d=\"2000\"/><S t=\"1624033\" d=\"2000\"/><S t=\"1626033\" d=\"2000\"/><S t=\"1628033\" d=\"2000\"/><S t=\"1630033\" d=\"2000\"/></SegmentTimeline></SegmentTemplate><FBInitializationBinary>AAAAHGZ0eXBpc282AAAAAWlzb21pc282ZGFzaAAAAjptb292AAAAbG12aGQAAAAAAAAAAAAAAAAAAAPoAAAAAAABAAABAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AAAAKG12ZXgAAAAgdHJleAAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAZ50cmFrAAAAXHRraGQAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAE6bWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAAAD6AAAAABVxAAAAAAALWhkbHIAAAAAAAAAAHNvdW4AAAAAAAAAAAAAAABTb3VuZEhhbmRsZXIAAAAA5W1pbmYAAAAQc21oZAAAAAAAAAAAAAAAJGRpbmYAAAAcZHJlZgAAAAAAAAABAAAADHVybCAAAAABAAAAqXN0YmwAAABdc3RzZAAAAAAAAAABAAAATW1wNGEAAAAAAAAAAQAAAAAAAAAAAAIAEAAAAAC7gAAAAAAAKWVzZHMAAAAAAxsAAAAEE0AVAAAAAAHxUQAB8U0FBCsRiAAGAQIAAAAQc3R0cwAAAAAAAAAAAAAAEHN0c2MAAAAAAAAAAAAAABRzdHN6AAAAAAAAAAAAAAAAAAAAEHN0Y28AAAAAAAAAAA==</FBInitializationBinary></Representation></AdaptationSet></Period></MPD>\n",
+                                                            "dash_manifest_url": "https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/1520482686108673.mpd?_nc_zt=28&ccb=2-4&ms=m_CTPAL&sc_t=1&oh=00_AfzUpQnO8qGoVO7YSlOzVeGEjXj9CooGpuf_4hrnRBGUkQ&oe=69CAB70A",
+                                                            "browser_native_sd_url": "https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/1520482686108673.mpd?_nc_zt=28&ccb=2-4&ms=m_CTPAL&sc_t=1&oh=00_AfzUpQnO8qGoVO7YSlOzVeGEjXj9CooGpuf_4hrnRBGUkQ&oe=69CAB70A",
+                                                            "browser_native_hd_url": "https://video.fcmn3-1.fna.fbcdn.net/hvideo-cco-atn/_nc_cat-100/_nc_sr_t-4/v/rAScYKhGIFLMud_wSSOEH_zUcS5LG3vpGqRFOgVq753DM2g/_nc_ohc-W7yxtJFXKaoQ7kNvwHQvQdS/live-dash/dash-abr-ibr-audio/1520482686108673.mpd?_nc_zt=28&ccb=2-4&ms=m_CTPAL&sc_t=1&oh=00_AfzUpQnO8qGoVO7YSlOzVeGEjXj9CooGpuf_4hrnRBGUkQ&oe=69CAB70A",
+                                                            "id": "987726176915503"
+                                                        },
+                                                        "videoDeliveryResponseFragment": null,
+                                                        "is_gaming_video": true,
+                                                        "is_latency_menu_enabled": true,
+                                                        "fbls_tier": "api",
+                                                        "is_latency_sensitive_broadcast": true,
+                                                        "video_player_shaka_performance_logger_init": {
+                                                            "__typename": "VideoPlayerShakaPerformanceLoggerInit",
+                                                            "__module_operation_useVideoPlayerShakaPerformanceLoggerRelayImpl_video": {
+                                                                "__dr": "useVideoPlayerShakaPerformanceLoggerRelayImpl_init$normalization.graphql"
+                                                            },
+                                                            "__module_component_useVideoPlayerShakaPerformanceLoggerRelayImpl_video": {
+                                                                "__dr": "VideoPlayerShakaPerformanceLogger"
+                                                            }
+                                                        },
+                                                        "video_player_shaka_performance_logger_should_sample": false,
+                                                        "video_player_shaka_performance_logger_init2": {
+                                                            "__typename": "VideoPlayerShakaPerformanceLoggerInit",
+                                                            "__module_operation_useVideoPlayerShakaPerformanceLoggerBuilder_video": {
+                                                                "__dr": "useVideoPlayerShakaPerformanceLoggerBuilder_init$normalization.graphql"
+                                                            },
+                                                            "__module_component_useVideoPlayerShakaPerformanceLoggerBuilder_video": {
+                                                                "__dr": "VideoPlayerShakaPerformanceLoggerBuilder"
+                                                            },
+                                                            "per_session_sampling_rate": null
+                                                        },
+                                                        "autoplay_gating_result": "all_page_organic_allowed",
+                                                        "viewer_autoplay_setting": "default_autoplay",
+                                                        "can_autoplay": true,
+                                                        "drm_info": "{\"video_license_uri_map\":{},\"graph_api_video_license_uri\":null,\"fairplay_cert\":null,\"widevine_cert\":\"CsECCAMSEBcFuRfMEgSGiwYzOi93KowYgrSCkgUijgIwggEKAoIBAQCZ7Vs7Mn2rXiTvw7YqlbWYUgrVvMs3UD4GRbgU2Ha430BRBEGtjOOtsRu4jE5yWl5KngeVKR1YWEAjp+GvDjipEnk5MAhhC28VjIeMfiG\\/+\\/7qd+EBnh5XgeikX0YmPRTmDoBYqGB63OBPrIRXsTeo1nzN6zNwXZg6IftO7L1KEMpHSQykfqpdQ4IY3brxyt4zkvE9b\\/tkQv0x4b9AsMYE0cS6TJUgpL+X7r1gkpr87vVbuvVk4tDnbNfFXHOggrmWEguDWe3OJHBwgmgNb2fG2CxKxfMTRJCnTuw3r0svAQxZ6ChD4lgvC2ufXbD8Xm7fZPvTCLRxG88SUAGcn1oJAgMBAAE6FGxpY2Vuc2Uud2lkZXZpbmUuY29tEoADrjRzFLWoNSl\\/JxOI+3u4y1J30kmCPN3R2jC5MzlRHrPMveoEuUS5J8EhNG79verJ1BORfm7BdqEEOEYKUDvBlSubpOTOD8S\\/wgqYCKqvS\\/zRnB3PzfV0zKwo0bQQQWz53ogEMBy9szTK\\/NDUCXhCOmQuVGE98K\\/PlspKkknYVeQrOnA+8XZ\\/apvTbWv4K+drvwy6T95Z0qvMdv62Qke4XEMfvKUiZrYZ\\/DaXlUP8qcu9u\\/r6DhpV51Wjx7zmVflkb1gquc9wqgi5efhn9joLK3\\/bNixbxOzVVdhbyqnFk8ODyFfUnaq3fkC3hR3f0kmYgI41sljnXXjqwMoW9wRzBMINk+3k6P8cbxfmJD4\\/Paj8FwmHDsRfuoI6Jj8M76H3CTsZCZKDJjM3BQQ6Kb2m+bQ0LMjfVDyxoRgvfF\\/\\/M\\/EEkPrKWyU2C3YBXpxaBquO4C8A0ujVmGEEqsxN1HX9lu6c5OMm8huDxwWFd7OHMs3avGpr7RP7DUnTikXrh6X0\"}",
+                                                        "p2p_settings": null,
+                                                        "audio_settings": null,
+                                                        "captions_settings": null,
+                                                        "broadcast_low_latency_config": {
+                                                            "ll_desired_latency_ms": 6000,
+                                                            "ll_latency_tolerance_ms": 10000
+                                                        },
+                                                        "audio_availability": "UNKNOWN",
+                                                        "muted_segments": [],
+                                                        "spherical_video_renderer": null,
+                                                        "video_imf_data": null,
+                                                        "playback_language_on_comet": null,
+                                                        "breakingStatus": false,
+                                                        "videoId": "987726176915503",
+                                                        "isPremiere": false,
+                                                        "liveViewerCount": 3640,
+                                                        "rehearsalInfo": null,
+                                                        "publish_time": 1774773027,
+                                                        "comet_video_player_audio_overlay_renderer": null,
+                                                        "is_live_audio_room_v2_broadcast": false,
+                                                        "recipient_group": null
+                                                    }
+                                                },
+                                                "extensions": {
+                                                    "fulfilled_payloads": [
+                                                        {
+                                                            "label": "CometTahoeRootQuery$defer$CometTahoeRootVideoArea_video",
+                                                            "path": [
+                                                                "video"
+                                                            ]
+                                                        }
+                                                    ],
+                                                    "is_final": false
+                                                }
+                                            },
+                                            "sequence_number": 0
+                                        }
+                                    }
+                                ]
+                            ],
+                            [
+                                "VideoPlayerSettingsMenuAudioTrackPaneToggle.react"
+                            ],
+                            [
+                                "RequireDeferredReference",
+                                "unblock",
+                                [],
+                                [
+                                    [
+                                        "VideoPlayerScrubberDefaultPreview_video$normalization.graphql",
+                                        "VideoPlayerScrubberDefaultPreview.react",
+                                        "useVideoPlayerShakaPerformanceLoggerRelayImpl_init$normalization.graphql",
+                                        "VideoPlayerShakaPerformanceLogger",
+                                        "useVideoPlayerShakaPerformanceLoggerBuilder_init$normalization.graphql",
+                                        "VideoPlayerShakaPerformanceLoggerBuilder",
+                                        "VideoPlayerSettingsMenuLatencyPaneToggle_video$normalization.graphql",
+                                        "VideoPlayerSettingsMenuLatencyPaneToggle.react",
+                                        "VideoPlayerSettingsMenuLatencyPane_video$normalization.graphql",
+                                        "VideoPlayerSettingsMenuLatencyPane.react",
+                                        "VideoPlayerLiveRewindControlsGroup_video$normalization.graphql",
+                                        "VideoPlayerLiveRewindControlsGroup.react",
+                                        "VideoPlayerClipVideoControl_video$normalization.graphql",
+                                        "VideoPlayerClipVideoControl.react",
+                                        "VideoPlayerSettingsMenuAudioTrackPaneToggle.react",
+                                        "CometTooltipDeferredImpl.react"
+                                    ],
+                                    "sd"
+                                ]
+                            ],
+                            [
+                                "RequireDeferredReference",
+                                "unblock",
+                                [],
+                                [
+                                    [
+                                        "VideoPlayerScrubberDefaultPreview_video$normalization.graphql",
+                                        "VideoPlayerScrubberDefaultPreview.react",
+                                        "useVideoPlayerShakaPerformanceLoggerRelayImpl_init$normalization.graphql",
+                                        "VideoPlayerShakaPerformanceLogger",
+                                        "useVideoPlayerShakaPerformanceLoggerBuilder_init$normalization.graphql",
+                                        "VideoPlayerShakaPerformanceLoggerBuilder",
+                                        "VideoPlayerSettingsMenuLatencyPaneToggle_video$normalization.graphql",
+                                        "VideoPlayerSettingsMenuLatencyPaneToggle.react",
+                                        "VideoPlayerSettingsMenuLatencyPane_video$normalization.graphql",
+                                        "VideoPlayerSettingsMenuLatencyPane.react",
+                                        "VideoPlayerLiveRewindControlsGroup_video$normalization.graphql",
+                                        "VideoPlayerLiveRewindControlsGroup.react",
+                                        "VideoPlayerClipVideoControl_video$normalization.graphql",
+                                        "VideoPlayerClipVideoControl.react",
+                                        "VideoPlayerSettingsMenuAudioTrackPaneToggle.react",
+                                        "CometTooltipDeferredImpl.react"
+                                    ],
+                                    "css"
+                                ]
+                            ],
+                            [
+                                "CometResourceScheduler",
+                                "registerHighPriHashes",
+                                null,
+                                [
+                                    [
+                                        "LKNsBf5",
+                                        "3HV8Xuk",
+                                        "7+N4Xf4",
+                                        "R4mbI/F",
+                                        "WC+mvqC",
+                                        "q3mi2U1",
+                                        "XwpSpu2",
+                                        "UBlgEOC",
+                                        "UASLBGJ"
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "phd2_indexes": ":532,533,508,507,510,509,1719,1718,1716,1717,1961,1960,1097,1098,502,558"
+                    }
+                },
+                {
+                    "__bbox": null
+                },
+                {
+                    "__bbox": null
+                }
+            ]
+        ]
+    ]
+}

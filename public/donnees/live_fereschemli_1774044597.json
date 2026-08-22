@@ -1,0 +1,208 @@
+{
+    "LiveRoom": {
+        "loadingState": {
+            "getRecommendLive": 0,
+            "getUserInfo": 2,
+            "getUserStat": 0
+        },
+        "needLogin": false,
+        "showLiveGate": false,
+        "isAgeGateRoom": false,
+        "recommendLiveRooms": [],
+        "liveRoomStatus": 0,
+        "liveRoomUserInfo": {
+            "user": {
+                "avatarLarger": "https://p19-common-sign.tiktokcdn-eu.com/tos-maliva-avt-0068/290db619ac90a2e35d415a3f8e50c881~tplv-tiktokx-cropcenter:1080:1080.webp?dr=10399&refresh_token=c11a8b36&x-expires=1774213200&x-signature=e4u7sLNK%2FVJEJr9g%2FYE872CKI2k%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=fdd36af4&idc=no1a",
+                "avatarMedium": "https://p16-common-sign.tiktokcdn-eu.com/tos-maliva-avt-0068/290db619ac90a2e35d415a3f8e50c881~tplv-tiktokx-cropcenter:720:720.webp?dr=10399&refresh_token=6c604330&x-expires=1774213200&x-signature=SWyKB1Kb1AnpynrX0KeDMGzxQHM%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=fdd36af4&idc=no1a",
+                "avatarThumb": "https://p16-common-sign.tiktokcdn-eu.com/tos-maliva-avt-0068/290db619ac90a2e35d415a3f8e50c881~tplv-tiktokx-cropcenter:100:100.webp?dr=10399&refresh_token=a9a5181b&x-expires=1774213200&x-signature=llBCgzudtKvx1sv9nKRBQnj%2FYvY%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=fdd36af4&idc=no1a",
+                "id": "6639740750199996422",
+                "nickname": "Feres Chemli",
+                "secUid": "MS4wLjABAAAALMG3mtf8giBc9yn5ERLzaxU1_eZQ1A2i6HfWKw3XhZEj5MxvZ7H6Z5zwcdtf9x4A",
+                "secret": false,
+                "uniqueId": "fereschemli",
+                "verified": false,
+                "roomId": "7619439431955942162",
+                "signature": "\u0632\u0643\u064a\u0629 \u2764\ufe0f\ud83c\udf39            \n\u0641\u0644\u0633\u0637\u064a\u0646 \u062d\u0631\u0629          \n\u0634\u0641\u062a\u0648\u0627 \u0635\u0648\u0631\u0629 \u0627\u0644\u064a\u0648\u0645 \u0639\u0644\u0649 \u0627\u0644\u0627\u0646\u0633\u062a\u06a8\u0631\u0627\u0645 \u061f",
+                "status": 2,
+                "followStatus": 0
+            },
+            "stats": {
+                "followingCount": 232,
+                "followerCount": 488089
+            },
+            "liveRoom": {
+                "coverUrl": "https://p16-common-sign.tiktokcdn-eu.com/tos-maliva-avt-0068/290db619ac90a2e35d415a3f8e50c881~tplv-tiktokx-cropcenter:720:720.webp?dr=10399&refresh_token=6c604330&x-expires=1774213200&x-signature=SWyKB1Kb1AnpynrX0KeDMGzxQHM%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=fdd36af4&idc=no1a",
+                "squareCoverImg": "",
+                "title": "",
+                "startTime": 1774039016,
+                "status": 2,
+                "paidEvent": {
+                    "event_id": 0,
+                    "paid_type": 0
+                },
+                "liveSubOnly": 0,
+                "liveRoomMode": 0,
+                "gameTagId": 0,
+                "liveRoomStats": {
+                    "enterCount": 7257,
+                    "userCount": 268
+                },
+                "streamData": {
+                    "pull_data": {
+                        "options": {
+                            "default_preview_quality": {
+                                "icon_type": 0,
+                                "level": 0,
+                                "name": "",
+                                "resolution": "",
+                                "sdk_key": "",
+                                "v_codec": ""
+                            },
+                            "default_quality": {
+                                "icon_type": 0,
+                                "level": 0,
+                                "name": "720p",
+                                "resolution": "",
+                                "sdk_key": "hd",
+                                "v_codec": ""
+                            },
+                            "qualities": [
+                                {
+                                    "icon_type": 0,
+                                    "level": 10,
+                                    "name": "Original",
+                                    "resolution": "",
+                                    "sdk_key": "origin",
+                                    "v_codec": ""
+                                },
+                                {
+                                    "icon_type": 0,
+                                    "level": 3,
+                                    "name": "720p",
+                                    "resolution": "",
+                                    "sdk_key": "hd",
+                                    "v_codec": ""
+                                },
+                                {
+                                    "icon_type": 0,
+                                    "level": 2,
+                                    "name": "540p",
+                                    "resolution": "",
+                                    "sdk_key": "sd",
+                                    "v_codec": ""
+                                },
+                                {
+                                    "icon_type": 0,
+                                    "level": 1,
+                                    "name": "360p",
+                                    "resolution": "",
+                                    "sdk_key": "ld",
+                                    "v_codec": ""
+                                }
+                            ],
+                            "show_quality_button": false,
+                            "support_low_latency": false
+                        },
+                        "stream_data": "{\"common\":{\"session_id\":\"054-20260320220956C5369023810A1A9B505F\",\"room_id\":7619439431955942162,\"rule_ids\":\"{\\\"ab_version_trace\\\":null,\\\"sched\\\":\\\"{\\\\\\\"ids\\\\\\\":[\\\\\\\"ex_31557(Weight:100)\\\\\\\"],\\\\\\\"result\\\\\\\":{\\\\\\\"hit\\\\\\\":\\\\\\\"exclusive\\\\\\\",\\\\\\\"cdn\\\\\\\":1817}}\\\"}\",\"query\":{\"group_version\":\"ov5\",\"infos\":\"518d4d840b834d7432f5bdb68add6cc876b8f89c3b2d5a0fa5d1e1e5fefd\"},\"user_count\":267,\"peer_anchor_level\":37},\"data\":{\"ao\":{\"main\":{\"flv\":\"https://pull-w5-sg01.fcdn.eu.tiktokcdn.com/stage/stream-2136666376141013038.flv?expire=1775254196&sign=2063af4746a147644243cc8059ef1d7d&only_audio=1\",\"hls\":\"\",\"cmaf\":\"\",\"dash\":\"\",\"lls\":\"\",\"tsl\":\"\",\"tile\":\"\",\"rtc\":\"\",\"sdk_params\":\"{\\\"VCodec\\\":\\\"h264\\\",\\\"resolution\\\":\\\"\\\",\\\"gop\\\":4,\\\"cdn_name\\\":\\\"fcdn\\\",\\\"stream_suffix\\\":\\\"ao\\\",\\\"vbitrate\\\":0}\"}},\"origin\":{\"main\":{\"flv\":\"https://pull-w5-sg01.fcdn.eu.tiktokcdn.com/stage/stream-2136666376141013038_or4.flv?expire=1775254196&sign=d3e30b51c9ebda28bbe779a5c78ca42d\",\"hls\":\"\",\"cmaf\":\"\",\"dash\":\"\",\"lls\":\"\",\"tsl\":\"\",\"tile\":\"\",\"rtc\":\"\",\"sdk_params\":\"{\\\"v_rtbitrate_vpaas_timestamp\\\":1774044596564,\\\"v_rtbitrate_pct\\\":1267480,\\\"v_rtbitrate_std\\\":62050,\\\"VCodec\\\":\\\"h264\\\",\\\"vbitrate\\\":1000000,\\\"stream_suffix\\\":\\\"or4\\\",\\\"gop\\\":4,\\\"v_rtpsnr\\\":0,\\\"cdn_name\\\":\\\"fcdn\\\",\\\"v_rtbitrate_timestamp\\\":1774044495006,\\\"resolution\\\":\\\"720x1280\\\",\\\"v_rtbitrate\\\":1202610}\"}},\"sd\":{\"main\":{\"flv\":\"https://pull-w5-sg01.fcdn.eu.tiktokcdn.com/stage/stream-2136666376141013038_sd.flv?expire=1775254196&sign=e6f62e671a346a7c507ba86816d7cb77\",\"hls\":\"\",\"cmaf\":\"\",\"dash\":\"\",\"lls\":\"\",\"tsl\":\"\",\"tile\":\"\",\"rtc\":\"\",\"sdk_params\":\"{\\\"gop\\\":0,\\\"cdn_name\\\":\\\"fcdn\\\",\\\"stream_suffix\\\":\\\"sd\\\",\\\"VCodec\\\":\\\"h264\\\",\\\"vbitrate\\\":800000,\\\"resolution\\\":\\\"480x853\\\"}\"}},\"ld\":{\"main\":{\"flv\":\"https://pull-w5-sg01.fcdn.eu.tiktokcdn.com/stage/stream-2136666376141013038_ld.flv?expire=1775254196&sign=8bb900dd3d013d8d38764dccbbadbee7\",\"hls\":\"\",\"cmaf\":\"\",\"dash\":\"\",\"lls\":\"\",\"tsl\":\"\",\"tile\":\"\",\"rtc\":\"\",\"sdk_params\":\"{\\\"gop\\\":0,\\\"v_rtbitrate_timestamp\\\":1774044410075,\\\"v_rtbitrate_vpaas_timestamp\\\":1774044596564,\\\"v_rtbitrate_std\\\":53980,\\\"v_rtbitrate_pct\\\":540160,\\\"v_rtbitrate\\\":522450.00000000006,\\\"VCodec\\\":\\\"h264\\\",\\\"resolution\\\":\\\"480x853\\\",\\\"cdn_name\\\":\\\"fcdn\\\",\\\"v_rtpsnr\\\":0,\\\"vbitrate\\\":500000,\\\"stream_suffix\\\":\\\"ld\\\"}\"}},\"hd\":{\"main\":{\"flv\":\"https://pull-w5-sg01.fcdn.eu.tiktokcdn.com/stage/stream-2136666376141013038_hd.flv?expire=1775254196&sign=a201f5e8f81087875119c8e5cad70196\",\"hls\":\"\",\"cmaf\":\"\",\"dash\":\"\",\"lls\":\"\",\"tsl\":\"\",\"tile\":\"\",\"rtc\":\"\",\"sdk_params\":\"{\\\"v_rtpsnr\\\":0,\\\"v_rtbitrate_vpaas_timestamp\\\":1774044596564,\\\"vbitrate\\\":1000000,\\\"gop\\\":4,\\\"v_rtbitrate_timestamp\\\":1774044590047,\\\"VCodec\\\":\\\"h264\\\",\\\"v_rtbitrate_std\\\":78520,\\\"stream_suffix\\\":\\\"hd\\\",\\\"resolution\\\":\\\"720x1280\\\",\\\"v_rtbitrate_pct\\\":932320,\\\"cdn_name\\\":\\\"fcdn\\\",\\\"v_rtbitrate\\\":829690}\"}}}}"
+                    },
+                    "push_data": {
+                        "push_stream_level": 0,
+                        "resolution_params": [],
+                        "stream_data": ""
+                    }
+                },
+                "streamId": "2136666376141013038",
+                "multiStreamScene": 0,
+                "multiStreamSource": 0,
+                "hevcStreamData": {
+                    "pull_data": {
+                        "options": {
+                            "default_preview_quality": {
+                                "icon_type": 0,
+                                "level": 0,
+                                "name": "",
+                                "resolution": "",
+                                "sdk_key": "",
+                                "v_codec": ""
+                            },
+                            "default_quality": {
+                                "icon_type": 0,
+                                "level": 0,
+                                "name": "720p",
+                                "resolution": "",
+                                "sdk_key": "hd",
+                                "v_codec": ""
+                            },
+                            "qualities": [
+                                {
+                                    "icon_type": 0,
+                                    "level": 10,
+                                    "name": "Original",
+                                    "resolution": "",
+                                    "sdk_key": "origin",
+                                    "v_codec": ""
+                                },
+                                {
+                                    "icon_type": 0,
+                                    "level": 3,
+                                    "name": "720p",
+                                    "resolution": "",
+                                    "sdk_key": "hd",
+                                    "v_codec": ""
+                                },
+                                {
+                                    "icon_type": 0,
+                                    "level": 2,
+                                    "name": "540p",
+                                    "resolution": "",
+                                    "sdk_key": "sd",
+                                    "v_codec": ""
+                                },
+                                {
+                                    "icon_type": 0,
+                                    "level": 1,
+                                    "name": "360p",
+                                    "resolution": "",
+                                    "sdk_key": "ld",
+                                    "v_codec": ""
+                                }
+                            ],
+                            "show_quality_button": false,
+                            "support_low_latency": false
+                        },
+                        "stream_data": "{\"common\":{\"session_id\":\"054-20260320220956C5369023810A1A9B505F\",\"room_id\":7619439431955942162,\"rule_ids\":\"{\\\"ab_version_trace\\\":null,\\\"sched\\\":\\\"{\\\\\\\"ids\\\\\\\":[\\\\\\\"ex_31557(Weight:100)\\\\\\\"],\\\\\\\"result\\\\\\\":{\\\\\\\"hit\\\\\\\":\\\\\\\"exclusive\\\\\\\",\\\\\\\"cdn\\\\\\\":1817}}\\\"}\",\"user_count\":252,\"peer_anchor_level\":37},\"data\":{\"sd\":{\"main\":{\"flv\":\"https://pull-w5-sg01.fcdn.eu.tiktokcdn.com/stage/stream-2136666376141013038_sd5b.flv?expire=1775254196&sign=c8884093fc4f7c91f4d3042a27bc81d4\",\"hls\":\"\",\"cmaf\":\"\",\"dash\":\"\",\"lls\":\"\",\"tsl\":\"\",\"tile\":\"\",\"rtc\":\"\",\"sdk_params\":\"{\\\"v_rtbitrate_vpaas_timestamp\\\":1774044596571,\\\"vbitrate\\\":850000,\\\"v_rtbitrate\\\":562810,\\\"v_rtbitrate_pct\\\":625100,\\\"cdn_name\\\":\\\"fcdn\\\",\\\"v_rtpsnr\\\":0,\\\"v_rtbitrate_timestamp\\\":1774043307036,\\\"stream_suffix\\\":\\\"sd5b\\\",\\\"VCodec\\\":\\\"h265\\\",\\\"resolution\\\":\\\"576x1024\\\",\\\"v_rtbitrate_std\\\":56260,\\\"gop\\\":4}\"}},\"origin\":{\"main\":{\"flv\":\"https://pull-w5-sg01.fcdn.eu.tiktokcdn.com/stage/stream-2136666376141013038.flv?expire=1775254196&sign=2063af4746a147644243cc8059ef1d7d\",\"hls\":\"\",\"cmaf\":\"\",\"dash\":\"\",\"lls\":\"\",\"tsl\":\"\",\"tile\":\"\",\"rtc\":\"\",\"sdk_params\":\"{\\\"resolution\\\":\\\"720x1280\\\",\\\"gop\\\":4,\\\"cdn_name\\\":\\\"fcdn\\\",\\\"VCodec\\\":\\\"h265\\\",\\\"vbitrate\\\":3000000}\"}},\"ao\":{\"main\":{\"flv\":\"https://pull-w5-sg01.fcdn.eu.tiktokcdn.com/stage/stream-2136666376141013038.flv?expire=1775254196&sign=2063af4746a147644243cc8059ef1d7d&only_audio=1\",\"hls\":\"\",\"cmaf\":\"\",\"dash\":\"\",\"lls\":\"\",\"tsl\":\"\",\"tile\":\"\",\"rtc\":\"\",\"sdk_params\":\"{\\\"VCodec\\\":\\\"h264\\\",\\\"vbitrate\\\":0,\\\"resolution\\\":\\\"\\\",\\\"gop\\\":4,\\\"cdn_name\\\":\\\"fcdn\\\",\\\"stream_suffix\\\":\\\"ao\\\"}\"}},\"ld\":{\"main\":{\"flv\":\"https://pull-w5-sg01.fcdn.eu.tiktokcdn.com/stage/stream-2136666376141013038_ld5.flv?expire=1775254196&sign=188cb9ecdbdd2c5309fece72a29ff51f\",\"hls\":\"\",\"cmaf\":\"\",\"dash\":\"\",\"lls\":\"\",\"tsl\":\"\",\"tile\":\"\",\"rtc\":\"\",\"sdk_params\":\"{\\\"v_rtbitrate_std\\\":35190,\\\"gop\\\":0,\\\"cdn_name\\\":\\\"fcdn\\\",\\\"v_rtpsnr\\\":0,\\\"v_rtbitrate_vpaas_timestamp\\\":1774044596571,\\\"stream_suffix\\\":\\\"ld5\\\",\\\"vbitrate\\\":400000,\\\"VCodec\\\":\\\"h265\\\",\\\"v_rtbitrate_pct\\\":454230,\\\"resolution\\\":\\\"480x853\\\",\\\"v_rtbitrate\\\":410300,\\\"v_rtbitrate_timestamp\\\":1774042308040}\"}},\"hd\":{\"main\":{\"flv\":\"https://pull-w5-sg01.fcdn.eu.tiktokcdn.com/stage/stream-2136666376141013038_hd5.flv?expire=1775254196&sign=69d7b6db5c19b1aa8bfd992b1f98072a\",\"hls\":\"\",\"cmaf\":\"\",\"dash\":\"\",\"lls\":\"\",\"tsl\":\"\",\"tile\":\"\",\"rtc\":\"\",\"sdk_params\":\"{\\\"VCodec\\\":\\\"h265\\\",\\\"v_rtbitrate_timestamp\\\":1774044584085,\\\"v_rtbitrate_pct\\\":523350,\\\"v_rtbitrate_std\\\":63660,\\\"stream_suffix\\\":\\\"hd5\\\",\\\"v_rtbitrate_vpaas_timestamp\\\":1774044596571,\\\"v_rtpsnr\\\":0,\\\"vbitrate\\\":1000000,\\\"resolution\\\":\\\"720x1280\\\",\\\"v_rtbitrate\\\":455900,\\\"gop\\\":4,\\\"cdn_name\\\":\\\"fcdn\\\"}\"}}}}"
+                    },
+                    "push_data": {
+                        "push_stream_level": 0,
+                        "resolution_params": [],
+                        "stream_data": ""
+                    }
+                }
+            }
+        }
+    },
+    "CurrentRoom": {
+        "loadingState": {
+            "enterRoom": 0
+        },
+        "roomInfo": null,
+        "anchorId": "",
+        "secAnchorId": "",
+        "anchorUniqueId": "",
+        "roomId": "",
+        "hotLiveRoomInfo": null,
+        "liveType": "video_live",
+        "reportLinkType": "normal_video_live",
+        "enterRoomWithSSR": true,
+        "playMode": "webpage",
+        "isGuestConnection": false,
+        "isMultiGuestRoom": false,
+        "showLiveChat": true,
+        "enableChat": true,
+        "isAnswerRoom": false,
+        "isGateRoom": false,
+        "requestId": "",
+        "ntpDiff": 0,
+        "followStatusMap": []
+    }
+}

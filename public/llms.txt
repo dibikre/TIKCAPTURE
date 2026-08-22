@@ -1,0 +1,59 @@
+# TikCapture
+
+> TikCapture est un outil web gratuit permettant d'enregistrer et de télécharger des lives TikTok en haute qualité, directement depuis le navigateur, sans installation ni watermark.
+
+TikCapture s'adresse aux fans, créateurs de contenu, journalistes, professionnels du marketing et familles souhaitant conserver des moments éphémères diffusés en direct sur TikTok. Le service est 100% gratuit, sans inscription, compatible tous appareils (Windows, Mac, Linux, Android, iOS).
+
+## Fonctionnalités principales
+
+- Enregistrement de lives TikTok en temps réel (qualité Original, HD 1080p, SD 720p, LD 480p)
+- Durées d'enregistrement : 30s, 1 min, 5 min, 10 min, ou mode continu illimité
+- Aperçu en temps réel du live avant enregistrement
+- Statistiques détaillées : abonnés, spectateurs, taille fichier, vitesse de téléchargement
+- Suggestions intelligentes de lives populaires en cours
+- Téléchargement direct au format FLV ou WebM
+- Extension navigateur disponible pour Firefox et Chrome (enregistrement simultané de plusieurs lives)
+- Aucun stockage serveur : les vidéos sont téléchargées directement sur l'appareil de l'utilisateur
+- Support des protocoles HLS et FLV utilisés par TikTok
+- Chiffrement HTTPS/TLS de toutes les communications
+
+## Pages du site
+
+- [Accueil – Enregistrer un Live TikTok](https://tikcapture.live/) : Interface principale de recherche et d'enregistrement de lives TikTok par nom d'utilisateur ou URL de profil.
+- [Télécharger des vidéos TikTok](https://tikcapture.live/tiktok-video) : Outil de téléchargement de vidéos TikTok sans watermark.
+- [Comment enregistrer un live TikTok](https://tikcapture.live/comment-enregistrer) : Guide complet pas à pas pour enregistrer un live TikTok avec TikCapture.
+- [Comment télécharger une vidéo TikTok](https://tikcapture.live/comment-telecharger) : Guide détaillé pour télécharger des vidéos TikTok gratuitement sans filigrane.
+- [Blog](https://tikcapture.live/blog) : Articles, astuces et actualités sur TikTok et TikCapture.
+- [FAQ](https://tikcapture.live/faq) : Questions fréquentes sur la légalité, les limites techniques, la confidentialité et l'utilisation de TikCapture.
+- [Tutoriels vidéo](https://tikcapture.live/tutoriels-video) : Tutoriels vidéo pas à pas pour utiliser TikCapture.
+- [Contact](https://tikcapture.live/contact) : Formulaire de contact pour l'équipe TikCapture.
+- [Suggestions](https://tikcapture.live/suggestion) : Page pour soumettre des idées et suggestions d'amélioration.
+- [CGU & Confidentialité](https://tikcapture.live/cgu) : Conditions générales d'utilisation et politique de confidentialité.
+- [Conditions générales de vente](https://tikcapture.live/cgv) : Conditions générales de vente.
+- [Mentions légales](https://tikcapture.live/mentions-legales) : Informations légales et mentions obligatoires.
+
+## Cas d'usage
+
+- Fans de musique : capture de concerts acoustiques et performances exclusives en live
+- Apprenants : enregistrement de tutoriels, cours de langue, démonstrations en direct
+- Professionnels du marketing : analyse de stratégies de communication et tendances
+- Créateurs de contenu : archivage de ses propres lives et création de compilations
+- Familles : conservation de moments partagés en direct par des proches éloignés
+- Journalistes et chercheurs : documentation d'événements en temps réel
+
+## Informations techniques
+
+- Type : Application web SPA (Single Page Application) — React + TypeScript + Vite
+- Protocoles supportés : HLS (HTTP Live Streaming), FLV (Flash Video)
+- Formats de sortie : FLV, WebM
+- Aucune donnée personnelle collectée
+- Extension Firefox : https://addons.mozilla.org/fr/firefox/addon/enregistreur-live-tiktok/
+- Extension Chrome : https://chromewebstore.google.com/detail/tikcapture/enelemgkfjmlpgcflabmeaeenodglfna
+
+## Informations légales
+
+L'enregistrement de contenu public TikTok est destiné à un usage personnel. TikCapture recommande de respecter les droits d'auteur et les conditions d'utilisation de TikTok, et de ne pas redistribuer le contenu enregistré sans l'autorisation du créateur original.
+
+## Contact
+
+Site : https://tikcapture.live/contact
